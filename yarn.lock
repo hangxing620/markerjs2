@@ -44,6 +44,11 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
+"@pqina/pintura@^8.71.2":
+  version "8.71.2"
+  resolved "https://registry.npmmirror.com/@pqina/pintura/-/pintura-8.71.2.tgz#820afa5fad7f0d00b0e92abfcc2fdb0a3df43b73"
+  integrity sha512-5dwkJCU992Q0LJWvwtZYJpchn73PJ2BF2b13QVIVPAIVRcwIiOVJvGVZ5z6Cm7wExl6KiZbMXyjvNgtdGgPMyg==
+
 "@rollup/plugin-typescript@^5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-typescript/-/plugin-typescript-5.0.2.tgz#e879b73354851868b805bbd43f15c229123b8a71"

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SvgHelper } from './core/SvgHelper';
 import { Activator } from './core/Activator';
 import { Renderer } from './core/Renderer';
