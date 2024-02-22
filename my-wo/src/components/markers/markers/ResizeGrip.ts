@@ -19,6 +19,8 @@ export class ResizeGrip {
    */
   constructor() {
     this.visual = SvgHelper.createGroup();
+    // 这两个圆的作用？
+    // 控制点是由两个圆形成的，一个外层，一个内层
     this.visual.appendChild(
       SvgHelper.createCircle(this.GRIP_SIZE * 1.5, [['fill', 'transparent']])
     );

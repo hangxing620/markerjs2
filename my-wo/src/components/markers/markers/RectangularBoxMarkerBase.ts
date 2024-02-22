@@ -164,6 +164,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.left = point.x;
       this.top = point.y;
     }
+    console.log('有没有我')
 
     this.manipulationStartLeft = this.left;
     this.manipulationStartTop = this.top;
@@ -182,8 +183,12 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.activeGrip = this.controlGrips.findGripByVisual(target as SVGGraphicsElement);
       if (this.activeGrip !== undefined) {
         this._state = 'resize';
+        console.log('有没有我resize')
+
       } else if (this.rotatorGrip !== undefined && this.rotatorGrip.ownsTarget(target)) {
         this.activeGrip = this.rotatorGrip;
+        console.log('有没有我rotatePoint')
+
 
         const rotatedCenter = this.rotatePoint({x: this.centerX, y: this.centerY});
         this.left = rotatedCenter.x - this.width / 2;
@@ -212,6 +217,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
    */
   public pointerUp(point: IPoint): void {
     const inState = this.state;
+    console.log(`Pointer up event --children-- Point: ${JSON.stringify(point)}`);
     super.pointerUp(point);
     if (this.state === 'creating' && this.width < 10 && this.height < 10) {
       this.width = this.defaultSize.x;
@@ -255,6 +261,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
         this.manipulationStartTop +
         (rotatedPoint.y - this.manipulationStartTop) -
         this.offsetY;
+      console.log(`move-- left: ${this.left}, top: ${this.top}`)
       this.moveVisual({x: this.left, y: this.top});
       this.adjustControlBox();
     } else if (this.state === 'resize') {
@@ -275,6 +282,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     let newHeight = this.manipulationStartHeight;
 
     switch(this.activeGrip) {
+      // 底部左，中部左，上部左
       case this.controlGrips.bottomLeft:
       case this.controlGrips.centerLeft:
       case this.controlGrips.topLeft:
@@ -360,6 +368,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     const matrix = this.container.getCTM();
     let svgPoint = SvgHelper.createPoint(point.x, point.y);
     svgPoint = svgPoint.matrixTransform(matrix);
+    console.log(`rotatePoint----原角度：${JSON.stringify(point)}, --旋转角度： ${JSON.stringify(svgPoint)}`);
 
     const result = { x: svgPoint.x, y: svgPoint.y };
 
@@ -379,7 +388,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     matrix = matrix.inverse();
     let svgPoint = SvgHelper.createPoint(point.x, point.y);
     svgPoint = svgPoint.matrixTransform(matrix);
-
+    console.log(`unrotatePoint---原角度：${JSON.stringify(point)}, --旋转角度： ${JSON.stringify(svgPoint)}`);
     const result = { x: svgPoint.x, y: svgPoint.y };
 
     return result;
@@ -402,14 +411,17 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     this.controlBox.style.display = 'none';
   }
 
+  // 添加控制点模块
   private setupControlBox() {
     this.controlBox = SvgHelper.createGroup();
     const translate = SvgHelper.createTransform();
+    // 设置向内偏移（this.CB_DISTANCE / 2）的距离
     translate.setTranslate(-this.CB_DISTANCE / 2, -this.CB_DISTANCE / 2);
     this.controlBox.transform.baseVal.appendItem(translate);
 
     this.container.appendChild(this.controlBox);
 
+    // 创建一个矩形控制【外框架】，这里将宽度和高度都增加（this.CB_DISTANCE），与前面的向内偏移的值，抹平
     this.controlRect = SvgHelper.createRect(
       this.width + this.CB_DISTANCE,
       this.height + this.CB_DISTANCE,
@@ -423,8 +435,10 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       ]
     );
 
+    // 将控制点【外框架】，添加到控制点容器
     this.controlBox.appendChild(this.controlRect);
 
+    // 创建旋转的直线
     if (this.globalSettings.disableRotation !== true) {
       this.rotatorGripLine = SvgHelper.createLine(
         (this.width + this.CB_DISTANCE * 2) / 2,
@@ -442,6 +456,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.controlBox.appendChild(this.rotatorGripLine);
     }
 
+    // 创建控制点容器（8个方向点和1个旋转点）
     this.controlGrips = new RectangularBoxMarkerGrips();
     this.addControlGrips();
 
@@ -480,6 +495,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     this.positionGrips();
   }
 
+  // 控制点（一个旋转点和8个方向点）
   private addControlGrips() {
     this.controlGrips.topLeft = this.createGrip();
     this.controlGrips.topCenter = this.createGrip();
@@ -494,6 +510,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.rotatorGrip = this.createGrip();
     }
 
+    // 设置控制点的位置
     this.positionGrips();
   }
 
@@ -505,6 +522,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     return grip;
   }
 
+  // 设置控制点（一个旋转点和8个方向点）的位置
   private positionGrips() {
     const gripSize = this.controlGrips.topLeft.GRIP_SIZE;
 

@@ -163,7 +163,7 @@ export class Toolbar {
         //   this.uiStyleSettings.toolbarButtonStyleColorsClassName : this.toolbarButtonStyleColorsClass.name}`;
         // icon = SVG源码
         console.log(mi.icon);
-        buttonContainer.innerHTML = mi.icon;
+        buttonContainer.innerHTML = process.env.NODE_ENV !== 'production' ? '1' : mi.icon;
         // 绘制工具的点击事件
         buttonContainer.addEventListener('click', () => {
           this.markerToolbarButtonClicked(buttonContainer, mi);

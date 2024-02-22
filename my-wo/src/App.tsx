@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import sample from './assets/sample.jpg';
 import './App.css';
-// import { MarkerArea } from './components/markers';
-// function initMarkerArea() {
+import { MarkerArea } from './components/markers';
+// function App() {
 //   function showMarkerArea(target: HTMLImageElement) {
 //     console.log('1')
 //     const markerArea = new MarkerArea(target);
@@ -18,15 +18,15 @@ import './App.css';
 //       showMarkerArea(sampleImage);
 //     });
 //   }
-//   // useEffect(() => {
-//   //   init();
-//   // // eslint-disable-next-line react-hooks/exhaustive-deps
-//   // }, [])
-//   // return (
-//   //   <div id="app1">
-//   //     <img alt="Vue logo" src={sample} id="sampleImage" />
-//   //   </div>
-//   // );
+//   useEffect(() => {
+//     init();
+//   // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [])
+//   return (
+//     <div id="app1">
+//       <img alt="Vue logo" src={sample} id="sampleImage" />
+//     </div>
+//   );
 // }
 
 import CanvasSelect from './components/canvas-select';
@@ -81,19 +81,23 @@ const option = [
 
 function App() {
 
-  const [instance, setInstance] = useState<CanvasSelect>(null);
+  const [instance, setInstance] = useState<CanvasSelect>();
   const [output, setOutput] = useState<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setInstance(new CanvasSelect(".container",  "https://cdn.jsdelivr.net/npm/@heylight/cdn@%5E1/img/onepiece.png"))
+    // setInstance(new CanvasSelect(".container",  "https://cdn.jsdelivr.net/npm/@heylight/cdn@%5E1/img/onepiece.png"))
+    setInstance(new CanvasSelect(".container", sample))
     setOutput(document.getElementById("output") as HTMLTextAreaElement);
 
     setTimeout(() => {
-      instance.labelMaxLen = 10;
-      // @ts-ignore
-      instance.setData(option);
+      // instance.labelMaxLen = 10;
+      // // @ts-ignore
+      // instance.setData(option);
 
       instance.on('load', (src: any) => {
+        instance.labelMaxLen = 10;
+        // @ts-ignore
+        instance.setData(option);
         console.log("image loaded", src);
       })
 
@@ -139,6 +143,7 @@ function App() {
     instance.setFocusMode(!instance.focusMode);
   }
   function update() {
+    console.log(instance.dataset);
     instance.update();
   }
   function changeData() {
@@ -164,10 +169,6 @@ function App() {
           <button onClick={() => onFocus()}>focusMode</button>
           <button onClick={() => update()}>update</button>
         </div>
-      </div>
-      <div className="right">
-        <div>output:(尝试修改下面的数据吧)</div>
-        <textarea id="output" onChange={() => changeData()}></textarea>
       </div>
     </div>
   );

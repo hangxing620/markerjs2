@@ -23,7 +23,7 @@ export default class CanvasSelect extends EventBus {
     /** 边线颜色 */
     strokeStyle = '#0f0';
     /** 填充颜色 */
-    fillStyle = 'rgba(0, 0, 255,0.1)';
+    fillStyle = 'rgba(0, 255, 105,0.1)';
     /** 边线宽度 */
     lineWidth = 1;
     /** 当前选中的标注边线颜色 */
@@ -174,6 +174,7 @@ export default class CanvasSelect extends EventBus {
                 mouseCY = Math.round(Math.abs((clientY1 - clientY) / 2 + clientY) - top);
             }
         } else {
+            // offsetX 相对于目标元素的内部X坐标的偏移量
             mouseX = (e as MouseEvent).offsetX;
             mouseY = (e as MouseEvent).offsetY;
         }
@@ -206,32 +207,53 @@ export default class CanvasSelect extends EventBus {
         e.stopPropagation();
         this.evt = e;
         if (this.lock) return;
+        // 获取鼠标和手势滑动偏移量
         const { mouseX, mouseY, mouseCX, mouseCY } = this.mergeEvent(e);
+        // 获取缩放后的偏移量
         const offsetX = Math.round(mouseX / this.scale);
         const offsetY = Math.round(mouseY / this.scale);
+        // 获取鼠标偏移量 or 手势滑动偏移量
         this.mouse = this.isMobile && (e as TouchEvent).touches.length === 2 ? [mouseCX, mouseCY] : [mouseX, mouseY];
+        // 记录背景图鼠标位移 -- 原点更改
         this.remmberOrigin = [mouseX - this.originX, mouseY - this.originY];
+        // 鼠标事件的 buttons 为 1是鼠标左键 2是鼠标右键 3是鼠标左右键同时按 4是滚轮中键
+        // 触摸事件的 touches length === 1 表示只有一个触摸点
         if ((!this.isMobile && (e as MouseEvent).buttons === 1) || (this.isMobile && (e as TouchEvent).touches.length === 1)) { // 鼠标左键
+            // 图形的控制点数组
             const ctrls = this.activeShape.ctrlsData || [];
+
             this.ctrlIndex = ctrls.findIndex((coor: Point) => this.isPointInCircle(this.mouse, coor, this.ctrlRadius));
+            // 点选到控制点
             if (this.ctrlIndex > -1) { // 点击到控制点
+                console.log('进入控制点', this.activeShape)
                 const [x0, y0] = ctrls[this.ctrlIndex];
+                // 记录锚点的距离
                 this.remmber = [[offsetX - x0, offsetY - y0]];
             } else if (this.isInBackground(e)) {
+                // 点选在背景图内
+
                 if (this.activeShape.creating && !this.readonly) { // 创建中
                     if ([2, 4].includes(this.activeShape.type)) {
+                        // 多边形和折线选中--状态--创建中
+                        // 拿最后一个坐标点出来做比较
                         const [x, y] = this.activeShape.coor[this.activeShape.coor.length - 1];
                         if (x !== offsetX && y !== offsetY) {
+                            // 获取缩放后的x,y坐标
                             const nx = Math.round(offsetX - this.originX / this.scale);
                             const ny = Math.round(offsetY - this.originY / this.scale);
+                            console.log(`多边形的每条线段: x: ${nx}, y: ${ny}`);
                             this.activeShape.coor.push([nx, ny]);
                         }
                     }
                 } else if (this.createType > 0 && !this.readonly) { // 开始创建
                     let newShape;
+                    // 获取缩放后的x,y坐标
                     const nx = Math.round(offsetX - this.originX / this.scale);
                     const ny = Math.round(offsetY - this.originY / this.scale);
                     const curPoint: Point = [nx, ny];
+                    // 图形的初始化工作
+                    // 如：设置初始化配置
+                    // creating=true 图形创建中
                     switch (this.createType) {
                         case 1:
                             newShape = new Rect({ coor: [curPoint, curPoint] }, this.dataset.length);
@@ -256,19 +278,28 @@ export default class CanvasSelect extends EventBus {
                         default:
                             break;
                     }
+                    // 其他图形active赋值为false,当前图形active赋值为true
                     this.dataset.forEach((sp) => { sp.active = false; });
                     newShape.active = true;
+                    
                     this.dataset.push(newShape);
                 } else {
                     // 是否点击到形状
                     const [hitShapeIndex, hitShape] = this.hitOnShape(this.mouse);
                     if (hitShapeIndex > -1) {
+                        // 点选到的图形，拖拽属性赋值为dragging=true，同时图形active为赋值为true
                         hitShape.dragging = true;
                         this.dataset.forEach((item, i) => item.active = i === hitShapeIndex);
+
+                        // 将点选到图形【置顶】（canvas只认最后绘制的）
                         this.dataset.splice(hitShapeIndex, 1);
                         this.dataset.push(hitShape);
+
                         if (!this.readonly) {
                             this.remmber = [];
+                            // 重新计算锚点位置
+
+                            // 【点和圆】图形
                             if ([3, 5].includes(hitShape.type)) {
                                 const [x, y] = hitShape.coor;
                                 this.remmber = [[offsetX - x, offsetY - y]];
@@ -300,11 +331,14 @@ export default class CanvasSelect extends EventBus {
         this.mouse = this.isMobile && (e as TouchEvent).touches.length === 2 ? [mouseCX, mouseCY] : [mouseX, mouseY];
         if (((!this.isMobile && (e as MouseEvent).buttons === 1) || (this.isMobile && (e as TouchEvent).touches.length === 1)) && this.activeShape.type) {
             if (this.ctrlIndex > -1 && (this.isInBackground(e) || this.activeShape.type === 5)) {
+                // 点选到控制点 or 点选到背景 or 点选到圆
+            
                 const [[x, y]] = this.remmber;
                 // resize矩形
-                if (this.activeShape.type === 1) {
+                if (this.activeShape.type === 1) { // 矩形
                     const [[x0, y0], [x1, y1]] = this.activeShape.coor;
                     let coor: Point[] = [];
+                    // 控制点
                     switch (this.ctrlIndex) {
                         case 0:
                             coor = [[offsetX - x, offsetY - y], [x1, y1]];
@@ -392,6 +426,7 @@ export default class CanvasSelect extends EventBus {
                 }
                 if (noLimit) this.activeShape.coor = coor;
             } else if (this.activeShape.creating && this.isInBackground(e)) {
+                // 【图形创建中】and 点选到背景图
                 const x = Math.round(offsetX - this.originX / this.scale);
                 const y = Math.round(offsetY - this.originY / this.scale);
                 // 创建矩形
@@ -906,13 +941,18 @@ export default class CanvasSelect extends EventBus {
             this.ctx.save();
             this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
             this.ctx.translate(this.originX, this.originY);
+
+            // 绘制图片
             if (this.IMAGE_WIDTH && this.IMAGE_HEIGHT) {
                 this.ctx.drawImage(this.image, 0, 0, this.IMAGE_WIDTH, this.IMAGE_HEIGHT);
             }
+
+            // 存储图形的数组
             const renderList = this.focusMode ? (this.activeShape.type ? [this.activeShape] : []) : this.dataset;
             for (let i = 0; i < renderList.length; i++) {
                 const shape = renderList[i];
                 if (shape.hide) continue;
+                // 绘制相对应的图形
                 switch (shape.type) {
                     case 1:
                         this.drawRect(shape as Rect);
@@ -933,6 +973,7 @@ export default class CanvasSelect extends EventBus {
                         break;
                 }
             }
+            // 矩形、多边形、折线、圆，绘制控制点
             if ([1, 2, 4, 5].includes(this.activeShape.type) && !this.activeShape.hide) {
                 this.drawCtrlList(this.activeShape);
             }
