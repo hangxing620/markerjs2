@@ -1,8 +1,8 @@
 
 // @ts-nocheck
 
-import { FabricObject } from './FabricObject';
-import { Util } from './Util';
+import { FabricObject } from '../FabricObject';
+import { Util } from '../Util';
 
 export class FabricImage extends FabricObject {
     public type: string = 'image';

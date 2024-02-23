@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { Util } from './Util';
 import { Point } from './Point';
 import { Intersection } from './Intersection';
-import { Offset, Coords, Corner, IAnimationOption } from './interface';
+import { Offset, Coords, Corner, IAnimationOption, Pos } from './interface';
 import { EventCenter } from './EventCenter';
 
 /** 物体基类，有一些共同属性和方法 */
@@ -10,6 +11,12 @@ export class FabricObject extends EventCenter {
     public type: string = 'object';
     /** 是否处于激活态，也就是是否被选中 */
     public active: boolean = false;
+    /** 是否处于创建中 */
+    public creating: boolean = false;
+    /** 背景图缩放比例 */
+    public scale: number = 1;
+    /** 鼠标点击的坐标(相对于canvas) */
+    public mouse: Pos;
     /** 是否可见 */
     public visible: boolean = true;
     /** 默认水平变换中心 left | right | center */

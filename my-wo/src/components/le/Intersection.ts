@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Point } from './Point';
 
 /** 检测多边形、线段是否相交的一个类 */

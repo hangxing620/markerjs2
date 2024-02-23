@@ -1,4 +1,5 @@
-import { FabricObject } from './FabricObject';
+// @ts-nocheck
+import { FabricObject } from '../FabricObject';
 
 /** 矩形类 */
 export class Rect extends FabricObject {
@@ -29,10 +30,10 @@ export class Rect extends FabricObject {
     _render(ctx: CanvasRenderingContext2D) {
         let rx = this.rx || 0,
             ry = this.ry || 0,
-            x = -this.width / 2,
-            y = -this.height / 2,
-            w = this.width,
-            h = this.height;
+            x = -this.getWidth() / 2,
+            y = -this.getHeight() / 2,
+            w = this.getWidth(),
+            h = this.getHeight();
 
         // 绘制一个新的东西，大部分情况下都要开启一个新路径，要养成习惯
         ctx.beginPath();

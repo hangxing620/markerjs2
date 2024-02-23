@@ -16,7 +16,7 @@
     <body>
         <canvas id="canvas" width="800" height="600"></canvas>
         <script type="module">
-            import { fabric } from './src/index.ts';
+            import { fabric } from './index.ts';
             const canvas = new fabric.Canvas(document.getElementById('canvas'));
             const rect = new fabric.Rect({
                 top: 200,
@@ -62,7 +62,7 @@
                 }
             );
             fabric.FabricImage.fromURL(
-                './src/beidaihe.jpeg',
+                './beidaihe.jpeg',
                 (img) => {
                     canvas.add(img);
                 },
@@ -94,6 +94,56 @@
                     onChange: canvas.renderAll.bind(canvas),
                 }
             );
+
+             // 这是一个基本的缩放控制，限制在 1% 和 2000% 之间。
+            //  canvas.on('mouse:wheel', function (opt) {
+            //     let delta = opt.e.deltaY;
+            //     let zoom = canvas.getZoom();
+            //     zoom *= 0.999 ** delta;
+            //     if (zoom > 20) zoom = 20;
+            //     if (zoom < 0.01) zoom = 0.01;
+            //     canvas.setZoom(zoom);
+            //     opt.e.preventDefault();
+            //     opt.e.stopPropagation();
+            // });
+            // canvas.on('mouse:wheel', function (opt) {
+            //     let delta = opt.e.deltaY;
+            //     let zoom = canvas.getZoom();
+            //     zoom *= 0.999 ** delta;
+            //     if (zoom > 20) zoom = 20;
+            //     if (zoom < 0.01) zoom = 0.01;
+            //     canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+            //     opt.e.preventDefault();
+            //     opt.e.stopPropagation();
+            // });
+
+             // 缩放限制
+            canvas.on('mouse:wheel', function (opt) {
+                let delta = opt.e.deltaY;
+                let zoom = canvas.getZoom();
+                zoom *= 0.999 ** delta;
+                if (zoom > 20) zoom = 20;
+                if (zoom < 0.01) zoom = 0.01;
+                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+                let vpt = this.viewportTransform;
+                if (zoom < 400 / 1000) {
+                    vpt[4] = 200 - (1000 * zoom) / 2;
+                    vpt[5] = 200 - (1000 * zoom) / 2;
+                } else {
+                    if (vpt[4] >= 0) {
+                        vpt[4] = 0;
+                    } else if (vpt[4] < canvas.getWidth() - 1000 * zoom) {
+                        vpt[4] = canvas.getWidth() - 1000 * zoom;
+                    }
+                    if (vpt[5] >= 0) {
+                        vpt[5] = 0;
+                    } else if (vpt[5] < canvas.getHeight() - 1000 * zoom) {
+                        vpt[5] = canvas.getHeight() - 1000 * zoom;
+                    }
+                }
+            });
 
             window.xx = canvas;
         </script>

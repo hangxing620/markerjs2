@@ -41,6 +41,9 @@ export class Canvas extends EventCenter {
     public contextCache: CanvasRenderingContext2D;
     public containerClass: string = 'canvas-container';
 
+    /** 鼠标点击的坐标(相对于canvas) */
+    public mouse: Pos;
+
     /** 记录最近一个激活的物体，可以优化点选过程，也就是点选的时候先判断是否是当前激活物体 */
     // public lastRenderedObjectWithControlsAboveOverlay;
     /** 通过像素来检测物体而不是通过包围盒 */
@@ -79,6 +82,17 @@ export class Canvas extends EventCenter {
     // private _previousOriginX;
     private _previousPointer: Pos;
 
+    /** 背景图片，主要绘制在下层画布上 */
+    image: HTMLImageElement = new Image();
+    /** 图片原始宽度 */
+    IMAGE_ORIGIN_WIDTH: number = 0;
+    /** 图片原始高度 */
+    IMAGE_ORIGIN_HEIGHT: number = 0;
+    /** 图片缩放宽度 */
+    IMAGE_ZOOM_WIDTH: number = 0;
+    /** 图片缩放高度 */
+    IMAGE_ZOOM_HEIGHT: number = 0;
+
     constructor(el: HTMLCanvasElement, options) {
         super();
         // 初始化下层画布 lower-canvas
@@ -89,7 +103,38 @@ export class Canvas extends EventCenter {
         this._createCacheCanvas();
         // 处理模糊问题
         this._initRetinaScaling();
+
+        // 背景图片地址
+        if (this.url) {
+            this._initSetImage(this.url);
+        }
     }
+
+    /** 当前缩放比例 */
+    get scale() {
+        if (this.IMAGE_ORIGIN_WIDTH && this.IMAGE_ZOOM_WIDTH) {
+            return this.IMAGE_ORIGIN_WIDTH / this.IMAGE_ZOOM_WIDTH;
+        }
+        return 1;
+    }
+    /** 图片最小边尺寸 */
+    get imageMin() {
+        return Math.min(this.IMAGE_ZOOM_WIDTH, this.IMAGE_ZOOM_HEIGHT);
+    }
+    /** 图片原始最大边尺寸 */
+    get imageOriginMax() {
+        return Math.max(this.IMAGE_ORIGIN_WIDTH, this.IMAGE_ORIGIN_HEIGHT)
+    }
+    _initSetImage(url: string) {
+        this.image.src = url;
+    }
+    _onImageLoad() {
+        this.emit('image:loaded', this.image.src);
+        this.IMAGE_ORIGIN_WIDTH = this.IMAGE_ZOOM_WIDTH = this.image.width;
+        this.IMAGE_ORIGIN_HEIGHT = this.IMAGE_ZOOM_HEIGHT = this.image.height;
+        
+    }
+
     /** 初始化 _objects、lower-canvas 宽高、options 赋值 */
     _initStatic(el: HTMLCanvasElement, options) {
         this._objects = [];
@@ -183,6 +228,7 @@ export class Canvas extends EventCenter {
     }
     /** 给上层画布增加鼠标事件 */
     _initEvents() {
+        this._onImageLoad = this._onImageLoad.bind(this);
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -191,6 +237,9 @@ export class Canvas extends EventCenter {
         Util.addListener(window, 'resize', this._onResize);
         Util.addListener(this.upperCanvasEl, 'mousedown', this._onMouseDown);
         Util.addListener(this.upperCanvasEl, 'mousemove', this._onMouseMove);
+
+        // 背景图加载
+        Util.addListener(this.image, 'load', this._onImageLoad);
     }
     _onMouseDown(e: MouseEvent) {
         this.__onMouseDown(e);
@@ -221,6 +270,7 @@ export class Canvas extends EventCenter {
 
         let target = this.findTarget(e);
         let pointer = this.getPointer(e);
+        this.mouse = pointer;
         let corner;
         this._previousPointer = pointer;
 
@@ -1168,6 +1218,7 @@ export class Canvas extends EventCenter {
         Util.removeListener(this.upperCanvasEl, 'mousedown', this._onMouseDown);
         Util.removeListener(this.upperCanvasEl, 'mousemove', this._onMouseMove);
         Util.removeListener(window, 'resize', this._onResize);
+        Util.removeListener(this.image, 'load', this._onImageLoad)
         return this;
     }
     toObject() {

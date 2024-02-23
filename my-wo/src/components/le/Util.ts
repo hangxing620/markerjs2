@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Point } from './Point';
 import { IAnimationOption, Offset, Transform } from './interface';
 

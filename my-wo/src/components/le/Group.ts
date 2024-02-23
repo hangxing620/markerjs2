@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FabricObject } from './FabricObject';
 import { Util } from './Util';
 

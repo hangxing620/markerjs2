@@ -156,7 +156,7 @@ export default class CanvasSelect extends EventBus {
         return Math.max(this.IMAGE_ORIGIN_WIDTH, this.IMAGE_ORIGIN_HEIGHT);
     }
 
-    /** 合成事件 */
+    /** 合成事件--offsetX 相对于目标元素的内部X坐标的偏移量 */
     mergeEvent(e: TouchEvent | MouseEvent) {
         let mouseX = 0;
         let mouseY = 0;
@@ -195,6 +195,7 @@ export default class CanvasSelect extends EventBus {
     }
 
     handleMousewheel(e: WheelEvent) {
+        // 鼠标滚轮缩放，缩放图片
         e.stopPropagation();
         this.evt = e;
         if (this.lock || !this.scrollZoom) return;
@@ -904,10 +905,13 @@ export default class CanvasSelect extends EventBus {
      * @param label 文本
      */
     drawLabel(point: Point, shape: AllShape) {
-        const { label = '', labelFillStyle = '', labelFont = '', textFillStyle = '', hideLabel, labelUp, lineWidth } = shape;
+        let { label = '', labelFillStyle = '', labelFont = '', textFillStyle = '', hideLabel, labelUp, lineWidth } = shape;
         const isHideLabel = typeof hideLabel === 'boolean' ? hideLabel : this.hideLabel;
         const isLabelUp = typeof labelUp === 'boolean' ? labelUp : this.labelUp;
         const currLineWidth = lineWidth || this.lineWidth;
+
+        label = 'wowo';
+        textFillStyle = '#0f0';
 
         if (label.length && !isHideLabel) {
             this.ctx.font = labelFont || this.labelFont;
@@ -938,11 +942,14 @@ export default class CanvasSelect extends EventBus {
     update() {
         window.cancelAnimationFrame(this.timer);
         this.timer = window.requestAnimationFrame(() => {
+            // save restore 是一对，保存当前画布绘制路径。
             this.ctx.save();
+            // 清除画布
             this.ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
+            // 缩放后，会更新原点的坐标，这里移动到【新的】【原点的坐标】
             this.ctx.translate(this.originX, this.originY);
 
-            // 绘制图片
+            // 绘制【图片】
             if (this.IMAGE_WIDTH && this.IMAGE_HEIGHT) {
                 this.ctx.drawImage(this.image, 0, 0, this.IMAGE_WIDTH, this.IMAGE_HEIGHT);
             }
@@ -1021,25 +1028,35 @@ export default class CanvasSelect extends EventBus {
      * @param pure 不绘制
      */
     setScale(type: boolean, byMouse = false, pure = false) {
+        // 只读模式，不能缩放
         if (this.lock) return;
+        // 图片缩小的边最小为20，就不能再缩小了。
+        // 图片放大的边最大为最长边的100倍，就不能再放大了
         if ((!type && this.imageMin < 20) || (type && this.IMAGE_WIDTH > this.imageOriginMax * 100)) return;
+        // 缩放的步长计算
         if (type) { this.scaleStep++; } else { this.scaleStep--; }
         let realToLeft = 0;
         let realToRight = 0;
         const [x, y] = this.mouse || [];
+        // 鼠标缩放
         if (byMouse) {
+            // 获取缩放后的坐标x,y
             realToLeft = (x - this.originX) / this.scale;
             realToRight = (y - this.originY) / this.scale;
         }
         const abs = Math.abs(this.scaleStep);
         const width = this.IMAGE_WIDTH;
+        // 利用指数运算，即a ** b 表示将 a 的 b 次方；2 ** 3; // 结果是 8，因为 2 的 3 次方是 8
         this.IMAGE_WIDTH = Math.round(this.IMAGE_ORIGIN_WIDTH * (this.scaleStep >= 0 ? 1.05 : 0.95) ** abs);
         this.IMAGE_HEIGHT = Math.round(this.IMAGE_ORIGIN_HEIGHT * (this.scaleStep >= 0 ? 1.05 : 0.95) ** abs);
         if (byMouse) {
+            // 计算缩放后的坐标原点x,y坐标
             this.originX = x - realToLeft * this.scale;
             this.originY = y - realToRight * this.scale;
         } else {
+            // 缩放比例
             const scale = this.IMAGE_WIDTH / width;
+            // 缩放后的原点坐标x,y
             this.originX = this.WIDTH / 2 - (this.WIDTH / 2 - this.originX) * scale;
             this.originY = this.HEIGHT / 2 - (this.HEIGHT / 2 - this.originY) * scale;
         }
