@@ -16,6 +16,7 @@ export default class Rect extends Shape {
       [x0 + (x1 - x0) / 2, y1],
       [x0, y1],
       [x0, y0 + (y1 - y0) / 2],
+      [x0 + (x1 - x0) / 2, y0 - 80],
     ];
   }
 }

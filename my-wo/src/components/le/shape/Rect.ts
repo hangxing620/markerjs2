@@ -30,10 +30,16 @@ export class Rect extends FabricObject {
     _render(ctx: CanvasRenderingContext2D) {
         let rx = this.rx || 0,
             ry = this.ry || 0,
-            x = -this.getWidth() / 2,
-            y = -this.getHeight() / 2,
-            w = this.getWidth(),
-            h = this.getHeight();
+            // x = -this.getWidth() / 2,
+            // y = -this.getHeight() / 2,
+            // w = this.getWidth(),
+            // h = this.getHeight();
+            x = -(this.width) / 2,
+            y = -(this.height) / 2,
+            w = this.width,
+            h = this.height;
+
+        console.log(`scale: ${this.scale}`)
 
         // 绘制一个新的东西，大部分情况下都要开启一个新路径，要养成习惯
         ctx.beginPath();

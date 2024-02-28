@@ -4,20 +4,28 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>手写一个轻量 fabric.js</title>
+        <title>┭┮﹏┭┮</title>
         <style>
+            * {
+                padding: 0;
+                margin: 0;
+            }
             canvas {
-                width: 800px;
-                width: 600px;
-                border: 1px solid;
+                width: 100vw;
+                width: 100vh;
             }
         </style>
     </head>
     <body>
-        <canvas id="canvas" width="800" height="600"></canvas>
+        <canvas id="canvas"></canvas>
         <script type="module">
             import { fabric } from './index.ts';
-            const canvas = new fabric.Canvas(document.getElementById('canvas'));
+            const targetCanvas = document.getElementById('canvas');
+            targetCanvas.width = document.documentElement.clientWidth;
+            targetCanvas.height = window.innerHeight;
+            const canvas = new fabric.Canvas(document.getElementById('canvas'), {
+                url: './sample.jpg'
+            });
             const rect = new fabric.Rect({
                 top: 200,
                 left: 100,
@@ -49,30 +57,38 @@
                 height: 50,
                 fill: 'pink',
             });
-            fabric.FabricImage.fromURL(
-                'https://p26-passport.byteacctimg.com/img/user-avatar/7470b65342454dd6699a6cf772652260~300x300.image',
-                (img) => {
-                    canvas.add(img);
-                },
-                {
-                    width: 200,
-                    height: 200,
-                    left: 300,
-                    top: 300,
-                }
-            );
-            fabric.FabricImage.fromURL(
-                './beidaihe.jpeg',
-                (img) => {
-                    canvas.add(img);
-                },
-                {
-                    width: 200,
-                    height: 200,
-                    left: 500,
-                    top: 400,
-                }
-            );
+            const polygon = new fabric.Polygon({
+                coords: [
+                    { x: 30, y: 11 },
+                    { x: 40, y: 41 },
+                    { x: 30, y: 41 },
+                    { x: 10, y: 71 },
+                ],
+            });
+            // fabric.FabricImage.fromURL(
+            //     'https://p26-passport.byteacctimg.com/img/user-avatar/7470b65342454dd6699a6cf772652260~300x300.image',
+            //     (img) => {
+            //         canvas.add(img);
+            //     },
+            //     {
+            //         width: 200,
+            //         height: 200,
+            //         left: 300,
+            //         top: 300,
+            //     }
+            // );
+            // fabric.FabricImage.fromURL(
+            //     './beidaihe.jpeg',
+            //     (img) => {
+            //         canvas.add(img);
+            //     },
+            //     {
+            //         width: 200,
+            //         height: 200,
+            //         left: 500,
+            //         top: 400,
+            //     }
+            // );
             const g = new fabric.Group([rect3, rect4], {
                 top: 200,
                 left: 200,
@@ -85,8 +101,14 @@
                 console.log('rect 被旋转了');
             });
 
-            canvas.add(rect, rect2, g);
 
+            polygon.on('added', () => {
+                console.log('polygon 被添加了');
+            });
+
+            // canvas.add(rect, rect2, g, polygon);
+
+            canvas.add(rect);
             rect.animate(
                 { top: 100, left: 400, scaleX: 1.5, angle: 45 },
                 {

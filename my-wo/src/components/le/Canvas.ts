@@ -132,7 +132,18 @@ export class Canvas extends EventCenter {
         this.emit('image:loaded', this.image.src);
         this.IMAGE_ORIGIN_WIDTH = this.IMAGE_ZOOM_WIDTH = this.image.width;
         this.IMAGE_ORIGIN_HEIGHT = this.IMAGE_ZOOM_HEIGHT = this.image.height;
-        
+        this.fitZoom();
+    }
+
+    /** 适配背景图 */
+    fitZoom() {
+        if (this.IMAGE_ZOOM_HEIGHT / this.IMAGE_ZOOM_WIDTH > this.height/ this.width) {
+            this.IMAGE_ZOOM_WIDTH = this.IMAGE_ORIGIN_WIDTH / (this.IMAGE_ORIGIN_HEIGHT / this.height);
+            this.IMAGE_ZOOM_HEIGHT = this.height;
+        } else {
+            this.IMAGE_ZOOM_WIDTH = this.width;
+            this.IMAGE_ZOOM_HEIGHT = this.IMAGE_ORIGIN_HEIGHT / (this.IMAGE_ORIGIN_WIDTH / this.width);
+        }
     }
 
     /** 初始化 _objects、lower-canvas 宽高、options 赋值 */
@@ -1033,7 +1044,7 @@ export class Canvas extends EventCenter {
         // 3、遍历像素数据，如果找到一个 rgba 中的 a 值 > 0 就说明至少有一个颜色，亦即不透明，退出循环
         // 4、清空 getImageData 变量，并清除缓冲层画布
         let cacheContext = this.contextCache;
-        this._draw(cacheContext, target);
+        this._draw(cacheContext, target, this);
 
         if (tolerance > 0) {
             // 如果允许误差
@@ -1117,10 +1128,16 @@ export class Canvas extends EventCenter {
             canvasToDrawOn.fillRect(0, 0, this.width, this.height);
         }
 
+        // 绘制背景图
+        if (this.IMAGE_ZOOM_WIDTH && this.IMAGE_ZOOM_HEIGHT) {
+            canvasToDrawOn.drawImage(this.image, 0, 0, this.IMAGE_ZOOM_WIDTH, this.IMAGE_ZOOM_HEIGHT);
+        }
+
         // 先绘制未激活物体，再绘制激活物体
         const sortedObjects = this._chooseObjectsToRender();
+        console.log(sortedObjects)
         for (let i = 0, len = sortedObjects.length; i < len; ++i) {
-            this._draw(canvasToDrawOn, sortedObjects[i]);
+            this._draw(canvasToDrawOn, sortedObjects[i], this);
         }
 
         this.emit('after:render');
@@ -1167,9 +1184,9 @@ export class Canvas extends EventCenter {
     getActiveGroup(): Group {
         return this._activeGroup;
     }
-    _draw(ctx: CanvasRenderingContext2D, object: FabricObject) {
+    _draw(ctx: CanvasRenderingContext2D, object: FabricObject, that: Canvas) {
         if (!object) return;
-        object.render(ctx);
+        object.render(ctx, false, that);
     }
     /** 获取画布的偏移量，到时计算鼠标点击位置需要用到 */
     calcOffset(): Canvas {

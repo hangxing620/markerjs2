@@ -1,7 +1,7 @@
 import { FabricObject } from "../FabricObject";
 import { Point } from "../Point";
 
-export default class Polygon extends FabricObject {
+export class Polygon extends FabricObject {
   public type: string = 'polygon';
 
   /** 多边形的控制点列表 */
@@ -18,6 +18,7 @@ export default class Polygon extends FabricObject {
 
   _render(ctx: CanvasRenderingContext2D) {
     const { active, creating, coords } = this;
+    console.log(this.scale, this.mouse);
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineWidth = this.strokeWidth;

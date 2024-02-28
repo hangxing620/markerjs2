@@ -404,4 +404,32 @@ export class Util {
             ')'
         );
     }
+   /**
+    * 判断是否在圆内
+    * @param point 坐标
+    * @param center 圆心
+    * @param r 半径
+    * @param scale 缩放比例
+    * @returns 布尔值
+    */
+   static isPointInCircle(point: Point, center: Point, r: number, scale: number): boolean {
+       const { x, y } = point;
+       const x0 = center.x * scale;
+       const y0 = center.y * scale;
+       const distance = Math.sqrt((x0 - x) ** 2 + (y0 - y) ** 2);
+       return distance <= r;
+   }
+
+   /**
+     * 判断鼠标是否在背景图内部
+     * @param e MouseEvent
+     * @returns 布尔值
+     */
+   static isInBackground(e: MouseEvent): boolean {
+    const { mouseX, mouseY } = this.mergeEvent(e);
+    return mouseX >= this.originX &&
+        mouseY >= this.originY &&
+        mouseX <= this.originX + this.IMAGE_ORIGIN_WIDTH * this.scale &&
+        mouseY <= this.originY + this.IMAGE_ORIGIN_HEIGHT * this.scale;
+    }
 }

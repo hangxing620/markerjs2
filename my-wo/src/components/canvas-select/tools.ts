@@ -1,3 +1,4 @@
+const PiBy180 = Math.PI / 180; 
 export function createUuid(): string {
   const s: any[] = [];
   const hexDigits = "0123456789abcdef";
@@ -91,4 +92,13 @@ function isPointInPolygon(x: number, y: number, vertices: any) {
   }
 
   return inside;
+}
+
+/** 角度转弧度，注意 canvas 中用的都是弧度，但是角度对我们来说比较直观 */
+export function degreesToRadians(degrees: number): number {
+  return degrees * PiBy180;
+}
+/** 弧度转角度，注意 canvas 中用的都是弧度，但是角度对我们来说比较直观 */
+export function  radiansToDegrees(radians: number): number {
+  return radians / PiBy180;
 }
