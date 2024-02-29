@@ -4,6 +4,7 @@ import { Point } from './Point';
 import { Intersection } from './Intersection';
 import { Offset, Coords, Corner, IAnimationOption, Pos } from './interface';
 import { EventCenter } from './EventCenter';
+import { Canvas } from './Canvas';
 
 /** 物体基类，有一些共同属性和方法 */
 export class FabricObject extends EventCenter {
@@ -111,8 +112,11 @@ export class FabricObject extends EventCenter {
         }
     }
     /** 渲染物体，默认用 fill 填充 */
-    render(ctx: CanvasRenderingContext2D, noTransform: boolean = false) {
+    render(ctx: CanvasRenderingContext2D, noTransform: boolean = false, that: Canvas) {
         if (this.width === 0 || this.height === 0 || !this.visible) return;
+        // this.mouse = that && that.mouse;
+        // this.scaleX = that && that.scaleX;
+        // this.scaleY = that && that.scaleY;
 
         ctx.save();
 
@@ -161,6 +165,7 @@ export class FabricObject extends EventCenter {
      * 我们采用的顺序是：平移 -> 旋转 -> 缩放，这样可以减少些计算量，如果我们先旋转，点的坐标值一般就不是整数，那么后面的变换基于非整数来计算
      */
     transform(ctx: CanvasRenderingContext2D) {
+        // 变换的效果为：平移 -》旋转 -》缩放
         let center = this.getCenterPoint();
         ctx.translate(center.x, center.y);
         ctx.rotate(Util.degreesToRadians(this.angle));

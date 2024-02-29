@@ -110,10 +110,17 @@ export class Canvas extends EventCenter {
         }
     }
 
-    /** 当前缩放比例 */
-    get scale() {
+    /** 当前缩放比例scaleX */
+    get scaleX() {
         if (this.IMAGE_ORIGIN_WIDTH && this.IMAGE_ZOOM_WIDTH) {
             return this.IMAGE_ORIGIN_WIDTH / this.IMAGE_ZOOM_WIDTH;
+        }
+        return 1;
+    }
+    /** 当前缩放比例scaleY */
+    get scaleY() {
+        if (this.IMAGE_ORIGIN_HEIGHT && this.IMAGE_ZOOM_HEIGHT) {
+            return this.IMAGE_ORIGIN_HEIGHT / this.IMAGE_ZOOM_HEIGHT;
         }
         return 1;
     }
@@ -1135,7 +1142,7 @@ export class Canvas extends EventCenter {
 
         // 先绘制未激活物体，再绘制激活物体
         const sortedObjects = this._chooseObjectsToRender();
-        console.log(sortedObjects)
+        // console.log(sortedObjects)
         for (let i = 0, len = sortedObjects.length; i < len; ++i) {
             this._draw(canvasToDrawOn, sortedObjects[i], this);
         }

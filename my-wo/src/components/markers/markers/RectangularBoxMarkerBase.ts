@@ -19,10 +19,12 @@ import { TransformMatrix } from '../core/TransformMatrix';
 export class RectangularBoxMarkerBase extends MarkerBase {
   /**
    * x coordinate of the top-left corner.
+   * 左上角的x坐标。
    */
   protected left = 0;
   /**
    * y coordinate of the top-left corner.
+   * 左上角的y坐标。
    */
   protected top = 0;
   /**
@@ -41,41 +43,50 @@ export class RectangularBoxMarkerBase extends MarkerBase {
 
   /**
    * x coordinate of the top-left corner at the start of manipulation.
+   * 操作开始时左上角的x坐标。
    */
   protected manipulationStartLeft: number;
   /**
    * y coordinate of the top-left corner at the start of manipulation.
+   * 操作开始时左上角的y坐标。
    */
   protected manipulationStartTop: number;
   /**
    * Width at the start of manipulation.
+   * 操纵开始时的宽度。
    */
   protected manipulationStartWidth: number;
   /**
    * Height at the start of manipulation.
+   * 操纵开始时的高度。
    */
   protected manipulationStartHeight: number;
 
   /**
    * x coordinate of the pointer at the start of manipulation.
+   * 操作开始时指针的x坐标。
    */
   protected manipulationStartX: number;
   /**
    * y coordinate of the pointer at the start of manipulation.
+   * 操作开始时指针的y坐标。
    */
   protected manipulationStartY: number;
 
   /**
    * Pointer's horizontal distance from the top left corner.
+   * 指针与左上角的水平距离。
    */
   protected offsetX = 0;
   /**
    * Pointer's vertical distance from the top left corner.
+   * 指针与左上角的垂直距离。
    */
   protected offsetY = 0;
 
   /**
    * Marker's rotation angle.
+   * 标记选择的角度
    */
   protected rotationAngle = 0;
 
@@ -276,9 +287,13 @@ export class RectangularBoxMarkerBase extends MarkerBase {
    * @param point - pointer coordinates.
    */
   protected resize(point: IPoint): void {
+    /** 操作开始时左上角的x坐标。 */
     let newX = this.manipulationStartLeft;
+    /** 新宽度 */
     let newWidth = this.manipulationStartWidth;
+    /** 操作开始时左上角的Y坐标。 */
     let newY = this.manipulationStartTop;
+    /** 新高度 */
     let newHeight = this.manipulationStartHeight;
 
     switch(this.activeGrip) {
