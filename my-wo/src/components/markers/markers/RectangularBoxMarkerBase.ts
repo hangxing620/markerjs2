@@ -284,6 +284,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
 
   /**
    * Resizes the marker based on pointer coordinates and context.
+   * 获取 left,top,width,height的值
    * @param point - pointer coordinates.
    */
   protected resize(point: IPoint): void {
@@ -304,6 +305,7 @@ export class RectangularBoxMarkerBase extends MarkerBase {
         newX = this.manipulationStartLeft + point.x - this.manipulationStartX;
         newWidth = this.manipulationStartWidth + this.manipulationStartLeft - newX;
         break; 
+      // 底部右，中部右，上部右
       case this.controlGrips.bottomRight:
       case this.controlGrips.centerRight:
       case this.controlGrips.topRight:
@@ -313,12 +315,14 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     }
 
     switch(this.activeGrip) {
+      // 顶部中，顶部左，顶部右
       case this.controlGrips.topCenter:
       case this.controlGrips.topLeft:
       case this.controlGrips.topRight:
         newY = this.manipulationStartTop + point.y - this.manipulationStartY;
         newHeight = this.manipulationStartHeight + this.manipulationStartTop - newY;
         break; 
+      // 底部中，底部左，底部右
       case this.controlGrips.bottomCenter:
       case this.controlGrips.bottomLeft:
       case this.controlGrips.bottomRight:

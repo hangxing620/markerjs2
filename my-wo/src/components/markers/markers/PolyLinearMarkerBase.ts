@@ -5,45 +5,36 @@ import { SvgHelper } from '../core/SvgHelper';
 
 import { ResizeGrip } from './ResizeGrip';
 import { Settings } from '../core/Settings';
-import { LinearMarkerBaseState } from './LinearMarkerBaseState';
+import { PolyLinearMarkerBaseState } from './PolyLinearMarkerBaseState';
 import { MarkerBaseState } from '../core/MarkerBaseState';
+
+
+/**
+ * 
+ * move 事件，更新线段
+ * dblclick 事件，结束线段的绘制
+ * down 事件，添加点
+ */
 
 /**
  * LinearMarkerBase is a base class for all line-type markers (Line, Arrow, Measurement Tool, etc.).
  */
-export class LinearMarkerBase extends MarkerBase {
+export class PolyLinearMarkerBase extends MarkerBase {
   /**
-   * x coordinate of the first end-point
+   * x and y coordinate list.
    */
-  protected x1 = 0;
+  protected points: IPoint[] = [];
   /**
-   * y coordinate of the first end-point
+   * x and y coordinate list.
    */
-  protected y1 = 0;
-  /**
-   * x coordinate of the second end-point
-   */
-  protected x2 = 0;
-  /**
-   * y coordinate of the second end-point
-   */
-  protected y2 = 0;
+  protected oldPoints: IPoint[] = [];
 
-  /**
-   * Default line length when marker is created with a simple click (without dragging).
-   */
-  protected defaultLength = 50;
 
   /**
    * Pointer coordinates at the satart of move or resize.
    */
   protected manipulationStartX = 0;
   protected manipulationStartY = 0;
-
-  private manipulationStartX1 = 0;
-  private manipulationStartY1 = 0;
-  private manipulationStartX2 = 0;
-  private manipulationStartY2 = 0;
 
   /**
    * Marker's main visual.
@@ -55,21 +46,16 @@ export class LinearMarkerBase extends MarkerBase {
    */
   protected controlBox: SVGGElement;
 
-  /**
-   * First manipulation grip
-   * 第一个操作手柄
-   */
-  protected grip1: ResizeGrip;
-  /**
-   * Second manipulation grip.
-   * 第二个操作手柄
-   */
-  protected grip2: ResizeGrip;
+  /** manipulation grips  */
+  protected grips: ResizeGrip[];
   /**
    * Active manipulation grip.
    * 主动操作手柄
    */
   protected activeGrip: ResizeGrip;
+
+  /** 创建是否结束 */
+  protected creating: boolean = false;
 
   /**
    * Creates a LineMarkerBase object.
@@ -93,7 +79,7 @@ export class LinearMarkerBase extends MarkerBase {
     if (super.ownsTarget(el)) {
       return true;
     } else if (
-      this.grip1.ownsTarget(el) || this.grip2.ownsTarget(el)
+      this.grips.some(i => i.ownsTarget(el))
     ) {
       return true;
     } else {
@@ -115,23 +101,26 @@ export class LinearMarkerBase extends MarkerBase {
     this.manipulationStartY = point.y;
 
     if (this.state === 'new') {
-      this.x1 = point.x;
-      this.y1 = point.y;
-      this.x2 = point.x;
-      this.y2 = point.y;
+      this.creating = true;
+      this.points.push({
+        x: point.x,
+        y: point.y,
+      });
+      this.addControlGrips();
     }
 
-    this.manipulationStartX1 = this.x1;
-    this.manipulationStartY1 = this.y1;
-    this.manipulationStartX2 = this.x2;
-    this.manipulationStartY2 = this.y2;
+    // this.manipulationStartX1 = this.x1;
+    // this.manipulationStartY1 = this.y1;
+    // this.manipulationStartX2 = this.x2;
+    // this.manipulationStartY2 = this.y2;
+    this.points.forEach((point, idx) => {
+      this.oldPoints[idx] = point;
+    });
 
     if (this.state !== 'new') {
       this.select();
-      if (this.grip1.ownsTarget(target)) {
-        this.activeGrip = this.grip1;
-      } else if (this.grip2.ownsTarget(target)) {
-        this.activeGrip = this.grip2;
+      if (this.grips.some(i => i.ownsTarget(target))) {
+        this.activeGrip = this.grips.find(i => i.ownsTarget(target));
       } else {
         this.activeGrip = undefined;
       }
@@ -153,8 +142,7 @@ export class LinearMarkerBase extends MarkerBase {
   public pointerUp(point: IPoint): void {
     const inState = this.state;
     super.pointerUp(point);
-    if (this.state === 'creating' && Math.abs(this.x1 - this.x2) < 10 && Math.abs(this.y1 - this.y2) < 10) {
-      this.x2 = this.x1 + this.defaultLength;
+    if (this.state === 'creating') {
       this.adjustVisual();
       this.adjustControlBox()
     } else {
@@ -164,6 +152,16 @@ export class LinearMarkerBase extends MarkerBase {
     if (inState === 'creating' && this.onMarkerCreated) {
       this.onMarkerCreated(this);
     }
+  }
+
+  /**
+   * 结束线段的绘制
+   * @param point 
+   * @param target 
+   */
+  public onDblClick(point: IPoint, target?: EventTarget): void {
+    // 结束绘制
+    this.creating = false;
   }
 
   /**
@@ -181,10 +179,15 @@ export class LinearMarkerBase extends MarkerBase {
     if (this.state === 'creating') {
       this.resize(point);
     } else if (this.state === 'move') {
-      this.x1 = this.manipulationStartX1 + point.x - this.manipulationStartX;
-      this.y1 = this.manipulationStartY1 + point.y - this.manipulationStartY;
-      this.x2 = this.manipulationStartX2 + point.x - this.manipulationStartX;
-      this.y2 = this.manipulationStartY2 + point.y - this.manipulationStartY;
+      // this.x1 = this.manipulationStartX1 + point.x - this.manipulationStartX;
+      // this.y1 = this.manipulationStartY1 + point.y - this.manipulationStartY;
+      // this.x2 = this.manipulationStartX2 + point.x - this.manipulationStartX;
+      // this.y2 = this.manipulationStartY2 + point.y - this.manipulationStartY;
+
+      this.points.forEach((point, idx) => {
+        point.x = this.oldPoints[idx].x + point.x - this.manipulationStartX;
+        point.y = this.oldPoints[idx].y + point.y - this.manipulationStartY;
+      });
       this.adjustVisual();
       this.adjustControlBox();
     } else if (this.state === 'resize') {
@@ -197,16 +200,12 @@ export class LinearMarkerBase extends MarkerBase {
    * @param point - current manipulation coordinates.
    */
   protected resize(point: IPoint): void {
-    switch(this.activeGrip) {
-      case this.grip1:
-        this.x1 = point.x;
-        this.y1 = point.y;
-        break; 
-      case this.grip2:
-      case undefined:
-        this.x2 = point.x;
-        this.y2 = point.y;
-        break; 
+
+    if (this.activeGrip) {
+      const fIndex = this.grips.findIndex(i => i === this.activeGrip);
+      const item = this.points[fIndex];
+      item.x = point.x;
+      item.y = point.y;
     }
     this.adjustVisual();
     this.adjustControlBox();
@@ -247,10 +246,14 @@ export class LinearMarkerBase extends MarkerBase {
 
   /**
    * Adds control grips to control box.
+   * todo: 每新增一个新的线段，都需要增加一个grip
    */
   protected addControlGrips(): void {
-    this.grip1 = this.createGrip();
-    this.grip2 = this.createGrip();
+    const length = this.points.length - this.grips.length;
+    for (let index = 0; index < length; index++) {
+      const grip = this.createGrip();
+      this.grips.push(grip);
+    }
 
     this.positionGrips();
   }
@@ -271,10 +274,14 @@ export class LinearMarkerBase extends MarkerBase {
    * Updates manipulation grip layout.
    */
   protected positionGrips(): void {
-    const gripSize = this.grip1.GRIP_SIZE;
+    if (this.grips.length === 0) return;
+    const gripSize = this.grips[0].GRIP_SIZE;
 
-    this.positionGrip(this.grip1.visual, this.x1 - gripSize / 2, this.y1 - gripSize / 2);
-    this.positionGrip(this.grip2.visual, this.x2 - gripSize / 2, this.y2 - gripSize / 2);
+    this.grips.forEach((grip, idx) => {
+      const point = this.points[idx];
+      this.positionGrip(grip.visual, point.x - gripSize / 2, point.y - gripSize / 2);
+    });
+
   }
 
   /**
@@ -292,12 +299,9 @@ export class LinearMarkerBase extends MarkerBase {
   /**
    * Returns marker's state.
    */
-  public getState(): LinearMarkerBaseState {
-    const result: LinearMarkerBaseState = Object.assign({
-      x1: this.x1,
-      y1: this.y1,
-      x2: this.x2,
-      y2: this.y2
+  public getState(): PolyLinearMarkerBaseState {
+    const result: PolyLinearMarkerBaseState = Object.assign({
+      points: this.points,
     }, super.getState());
 
     return result;
@@ -309,11 +313,8 @@ export class LinearMarkerBase extends MarkerBase {
    */
   public restoreState(state: MarkerBaseState): void {
     super.restoreState(state);
-    const lmbState = state as LinearMarkerBaseState;
-    this.x1 = lmbState.x1;
-    this.y1 = lmbState.y1;
-    this.x2 = lmbState.x2;
-    this.y2 = lmbState.y2;
+    const lmbState = state as PolyLinearMarkerBaseState;
+    this.points = lmbState.points;
   }
 
   /**
@@ -325,10 +326,10 @@ export class LinearMarkerBase extends MarkerBase {
   public scale(scaleX: number, scaleY: number): void {
     super.scale(scaleX, scaleY);
 
-    this.x1 = this.x1 * scaleX;
-    this.y1 = this.y1 * scaleY;
-    this.x2 = this.x2 * scaleX;
-    this.y2 = this.y2 * scaleY;
+    this.points.forEach(point => {
+      point.x = point.x * scaleX;
+      point.y = point.y * scaleY;
+    })
 
     this.adjustVisual();
     this.adjustControlBox();

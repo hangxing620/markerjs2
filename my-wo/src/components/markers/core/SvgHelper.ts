@@ -98,6 +98,28 @@ export class SvgHelper {
   }
 
   /**
+   * Creates an SVG polyline with specified points.
+   * @param points - points as string.
+   * @param attributes - additional attributes.
+   */
+  public static createPolyline(
+    points: string,
+    attributes?: Array<[string, string]>
+  ): SVGPolygonElement {
+    const polyline = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'polyline'
+    );
+
+    polyline.setAttribute('points', points);
+    if (attributes) {
+      SvgHelper.setAttributes(polyline, attributes);
+    }
+
+    return polyline;
+  }
+
+  /**
    * Creates an SVG circle with the specified radius.
    * @param radius 
    * @param attributes - additional attributes.
