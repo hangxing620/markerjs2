@@ -34,6 +34,7 @@ import {
   MarkerAreaRenderEvent,
   MarkerEvent,
 } from './core/Events';
+import { PolylineMarker } from './markers/polyline-marker/PolylineMarker';
 
 /**
  * @ignore
@@ -133,6 +134,7 @@ export class MarkerArea {
       TextMarker,
       EllipseFrameMarker,
       EllipseMarker,
+      PolylineMarker,
       HighlightMarker,
       CalloutMarker,
       MeasurementMarker,
@@ -156,6 +158,7 @@ export class MarkerArea {
       ArrowMarker,
       TextMarker,
       EllipseMarker,
+      PolylineMarker,
       HighlightMarker,
       CalloutMarker,
     ];
@@ -1508,7 +1511,6 @@ export class MarkerArea {
     } else {
       mType = markerType;
     }
-
     if (mType) {
       this.setCurrentMarker();
       this.addUndoStep();
@@ -1600,6 +1602,7 @@ export class MarkerArea {
   }
 
   private onPointerDown(ev: PointerEvent) {
+    // console.log(this._currentMarker);
     if (!this._isFocused) {
       this.focus();
     }
@@ -1682,7 +1685,7 @@ export class MarkerArea {
     }
     if (this.touchPoints === 0) {
       if (this.isDragging && this._currentMarker !== undefined) {
-        console.log(`Pointer up event-- X: ${ev.clientX}, Y: ${ev.clientY}`);
+        // console.log(`Pointer up event-- X: ${ev.clientX}, Y: ${ev.clientY}`);
         this._currentMarker.pointerUp(
           this.clientToLocalCoordinates(ev.clientX, ev.clientY)
         );

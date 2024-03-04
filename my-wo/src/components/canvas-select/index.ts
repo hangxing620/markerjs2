@@ -4,7 +4,7 @@ import Dot from './shape/Dot';
 import EventBus from './EventBus';
 import Line from './shape/Line';
 import Circle from './shape/Circle';
-import { CurrentTransform, isNested, radiansToDegrees } from "./tools";
+import { isNested, radiansToDegrees } from "./tools";
 
 export type Point = [number, number];
 export type AllShape = Rect | Polygon | Dot | Line | Circle;
@@ -62,7 +62,7 @@ export default class CanvasSelect extends EventBus {
     offScreenCtx: CanvasRenderingContext2D;
 
     /** 当前物体的变换信息，src 目录下中有截图 */
-    private _currentTransform: CurrentTransform;
+    // private _currentTransform: CurrentTransform;
     /** 记录锚点距离 */
     remmber: number[][];
     /** 记录鼠标位置 */
@@ -326,19 +326,19 @@ export default class CanvasSelect extends EventBus {
     }
 
     /** 旋转当前选中物体，这里用的是 += */
-    _rotateObject(x: number, y: number) {
-        const t = this._currentTransform;
-        // 鼠标按下的点与物体中心点连线和 x 轴正方向形成的弧度
-        const lastAngle = Math.atan2(t.ey, t.ex);
-        // 鼠标拖拽的终点与物体中心点连线和 x 轴正方向形成的弧度
-        const curAngle = Math.atan2(y , x);
-        let angle = radiansToDegrees(curAngle - lastAngle + t.theta); // 新的角度 = 变换的角度 + 原来的角度
-        if (angle < 0) {
-            angle = 360 + angle;
-        }
-        angle = angle % 360;
-        return angle;
-    }
+    // _rotateObject(x: number, y: number) {
+    //     // const t = this._currentTransform;
+    //     // 鼠标按下的点与物体中心点连线和 x 轴正方向形成的弧度
+    //     const lastAngle = Math.atan2(t.ey, t.ex);
+    //     // 鼠标拖拽的终点与物体中心点连线和 x 轴正方向形成的弧度
+    //     const curAngle = Math.atan2(y , x);
+    //     let angle = radiansToDegrees(curAngle - lastAngle + t.theta); // 新的角度 = 变换的角度 + 原来的角度
+    //     if (angle < 0) {
+    //         angle = 360 + angle;
+    //     }
+    //     angle = angle % 360;
+    //     return angle;
+    // }
 
     handelMouseMove(e: MouseEvent | TouchEvent) {
         e.stopPropagation();

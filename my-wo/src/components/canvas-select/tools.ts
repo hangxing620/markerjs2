@@ -1,3 +1,5 @@
+import Shape from "./shape/Shape";
+
 const PiBy180 = Math.PI / 180; 
 export function createUuid(): string {
   const s: any[] = [];
@@ -101,4 +103,42 @@ export function degreesToRadians(degrees: number): number {
 /** 弧度转角度，注意 canvas 中用的都是弧度，但是角度对我们来说比较直观 */
 export function  radiansToDegrees(radians: number): number {
   return radians / PiBy180;
+}
+
+
+export interface CurrentTransform {
+  target: Shape;
+  /** 当前操作：拖拽 | 旋转 | 缩放 | 拉伸 */
+  action: string;
+  currentAction?: string;
+  /** 物体缩放值 x */
+  scaleX: number;
+  /** 物体缩放值 y */
+  scaleY: number;
+  /** 画布偏移 x */
+  offsetX: number;
+  /** 画布偏移 y */
+  offsetY: number;
+  /** 物体变换基点 originX */
+  originX: string;
+  /** 物体变换基点 originY */
+  originY: string;
+  /** 鼠标点击坐标 ex */
+  ex: number;
+  /** 鼠标点击坐标 ey */
+  ey: number;
+  /** 物体参考中心 left */
+  left: number;
+  /** 物体参考中心 top */
+  top: number;
+  /** 物体旋转弧度 */
+  theta: number;
+  /** 物体宽度，需要乘以缩放值 */
+  width: number;
+  /** x 轴方向拉伸的标志 */
+  mouseXSign: number;
+  /** y 轴方向拉伸的标志 */
+  mouseYSign: number;
+  /** 原始的变换 */
+  original?: any;
 }

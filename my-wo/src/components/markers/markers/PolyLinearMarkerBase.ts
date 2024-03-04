@@ -47,15 +47,15 @@ export class PolyLinearMarkerBase extends MarkerBase {
   protected controlBox: SVGGElement;
 
   /** manipulation grips  */
-  protected grips: ResizeGrip[];
+  protected grips: ResizeGrip[] = [];
+
+  /** 创建是否完成 */
+  protected created: boolean = false;
   /**
    * Active manipulation grip.
    * 主动操作手柄
    */
   protected activeGrip: ResizeGrip;
-
-  /** 创建是否结束 */
-  protected creating: boolean = false;
 
   /**
    * Creates a LineMarkerBase object.
@@ -101,7 +101,6 @@ export class PolyLinearMarkerBase extends MarkerBase {
     this.manipulationStartY = point.y;
 
     if (this.state === 'new') {
-      this.creating = true;
       this.points.push({
         x: point.x,
         y: point.y,
@@ -109,16 +108,13 @@ export class PolyLinearMarkerBase extends MarkerBase {
       this.addControlGrips();
     }
 
-    // this.manipulationStartX1 = this.x1;
-    // this.manipulationStartY1 = this.y1;
-    // this.manipulationStartX2 = this.x2;
-    // this.manipulationStartY2 = this.y2;
     this.points.forEach((point, idx) => {
       this.oldPoints[idx] = point;
     });
 
     if (this.state !== 'new') {
       this.select();
+      if (!target) return;
       if (this.grips.some(i => i.ownsTarget(target))) {
         this.activeGrip = this.grips.find(i => i.ownsTarget(target));
       } else {
@@ -142,13 +138,16 @@ export class PolyLinearMarkerBase extends MarkerBase {
   public pointerUp(point: IPoint): void {
     const inState = this.state;
     super.pointerUp(point);
-    if (this.state === 'creating') {
-      this.adjustVisual();
-      this.adjustControlBox()
-    } else {
-      this.manipulate(point);
+    // if (this.state === 'creating') {
+    //   this.adjustVisual();
+    //   this.adjustControlBox()
+    //   this._state = 'select';
+    // } else {
+    //   this.manipulate(point);
+    // }
+    if (this.created) {
+      this._state = 'select';
     }
-    this._state = 'select';
     if (inState === 'creating' && this.onMarkerCreated) {
       this.onMarkerCreated(this);
     }
@@ -159,9 +158,13 @@ export class PolyLinearMarkerBase extends MarkerBase {
    * @param point 
    * @param target 
    */
-  public onDblClick(point: IPoint, target?: EventTarget): void {
+  public dblClick(point: IPoint, target?: EventTarget): void {
+    super.dblClick(point, target);
     // 结束绘制
-    this.creating = false;
+    this._state = 'creating';
+    this.created = true;
+    this.adjustVisual();
+    this.adjustControlBox();
   }
 
   /**
@@ -179,15 +182,32 @@ export class PolyLinearMarkerBase extends MarkerBase {
     if (this.state === 'creating') {
       this.resize(point);
     } else if (this.state === 'move') {
-      // this.x1 = this.manipulationStartX1 + point.x - this.manipulationStartX;
-      // this.y1 = this.manipulationStartY1 + point.y - this.manipulationStartY;
-      // this.x2 = this.manipulationStartX2 + point.x - this.manipulationStartX;
-      // this.y2 = this.manipulationStartY2 + point.y - this.manipulationStartY;
-
+      const points: IPoint[] = [];
+      let noLimit = false;
       this.points.forEach((point, idx) => {
-        point.x = this.oldPoints[idx].x + point.x - this.manipulationStartX;
-        point.y = this.oldPoints[idx].y + point.y - this.manipulationStartY;
+        const x = this.oldPoints[idx].x + point.x - this.manipulationStartX;
+        const y = this.oldPoints[idx].y + point.y - this.manipulationStartY;
+        if (x < 0 || y < 0) {
+          noLimit = true;
+        }
+        points.push({
+          x,
+          y
+        });
       });
+      if (!noLimit) {
+        this.points = points;
+      }
+      // this.points.forEach((point, idx) => {
+      //   const x = this.oldPoints[idx].x - this.manipulationStartX - point.x;
+      //   const y = this.oldPoints[idx].y - this.manipulationStartY - point.y;
+      //   if (x < 0 || y< 0) {
+      //   } else {
+      //     point.x = x;
+      //     point.y = y;
+      //   }
+      // });
+      console.log(JSON.stringify(this.points));
       this.adjustVisual();
       this.adjustControlBox();
     } else if (this.state === 'resize') {
@@ -249,10 +269,13 @@ export class PolyLinearMarkerBase extends MarkerBase {
    * todo: 每新增一个新的线段，都需要增加一个grip
    */
   protected addControlGrips(): void {
-    const length = this.points.length - this.grips.length;
-    for (let index = 0; index < length; index++) {
-      const grip = this.createGrip();
-      this.grips.push(grip);
+    if (this.points.length > 0) {
+      this.points.forEach((_, index) => {
+        if (!this.grips[index]) {
+          const grip = this.createGrip();
+          this.grips.push(grip);
+        }
+      });
     }
 
     this.positionGrips();

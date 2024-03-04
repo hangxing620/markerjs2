@@ -65,8 +65,6 @@ export class PolylineMarker extends PolyLinearMarkerBase {
   constructor(container: SVGGElement, overlayContainer: HTMLDivElement, settings: Settings) {
     super(container, overlayContainer, settings);
 
-    super(container, overlayContainer, settings);
-
     this.setStrokeColor = this.setStrokeColor.bind(this);
     this.setStrokeWidth = this.setStrokeWidth.bind(this);
     this.setStrokeDasharray = this.setStrokeDasharray.bind(this);
@@ -102,7 +100,9 @@ export class PolylineMarker extends PolyLinearMarkerBase {
       super.ownsTarget(el) ||
       el === this.visual ||
       el === this.selectorLine ||
-      el === this.visibleLine) {
+      el === this.visibleLine ||
+      // @ts-ignore
+      this.visibleLine.getAttribute('points').includes(el.getAttribute('points'))) {
       return true;
     } else {
       return false;
@@ -121,6 +121,7 @@ export class PolylineMarker extends PolyLinearMarkerBase {
   }
 
   private createVisual() {
+    if (this.visual) return;
     this.visual = SvgHelper.createGroup();
     const str = this.getPointsToString(this.points);
     this.selectorLine = SvgHelper.createPolyline(
@@ -128,6 +129,7 @@ export class PolylineMarker extends PolyLinearMarkerBase {
       [
         ['store', this.strokeColor],
         ['fill', 'none'],
+        ['stroke', 'transparent'],
         ['stroke-width', (this.strokeWidth + 10).toString()],
       ]
     );
@@ -206,9 +208,16 @@ export class PolylineMarker extends PolyLinearMarkerBase {
     if (this.state === 'new') {
       this.createVisual();
       this.adjustVisual();
-
-      this._state = 'creating';
     }
+  }
+
+  /**
+   * 结束线段的绘制
+   * @param point 
+   * @param target 
+   */
+  public dblClick(point: IPoint, target?: EventTarget): void {
+    super.dblClick(point, target);
   }
 
   /**
