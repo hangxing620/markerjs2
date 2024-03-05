@@ -100,7 +100,7 @@ export class PolygonMarker extends PolyLinearMarkerBase {
       'Fill color',
       [...settings.defaultColorSet, 'transparent'],
       this.fillColor,
-      FillColorIcon,
+      process.env.NODE_ENV !== 'production' ? '1' : FillColorIcon,
       'fill-color-panel'
     );
     this.fillPanel.onColorChanged = this.setFillColor;

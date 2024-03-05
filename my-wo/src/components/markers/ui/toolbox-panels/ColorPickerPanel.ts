@@ -36,7 +36,7 @@ export class ColorPickerPanel extends ToolboxPanel {
     icon?: string,
     id?: string
   ) {
-    super(title, icon ? icon : Icon, id ? id : 'color-picker-panel');
+    super(title, icon ? icon : process.env.NODE_ENV !== 'production' ? '1' : Icon, id ? id : 'color-picker-panel');
     this.colors = colors;
     this.currentColor = currentColor;
 

@@ -35,7 +35,7 @@ export class OpacityPanel extends ToolboxPanel {
     icon?: string,
     id?: string
   ) {
-    super(title, icon ? icon : Icon, id ? id : 'opacity-panel');
+    super(title, icon ? icon : process.env.NODE_ENV !== 'production' ? '1' : Icon, id ? id : 'opacity-panel');
     this.opacities = opacities;
     this.currentOpacity = currentOpacity;
 

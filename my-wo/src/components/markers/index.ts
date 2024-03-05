@@ -72,6 +72,10 @@ export { TextMarker } from './markers/text-marker/TextMarker';
 export type { TextMarkerState } from './markers/text-marker/TextMarkerState';
 export { CaptionFrameMarker } from './markers/caption-frame-marker/CaptionFrameMarker';
 export type { CaptionFrameMarkerState } from './markers/caption-frame-marker/CaptionFrameMarkerState';
+export { PolygonMarker } from './markers/polygon-marker/PolygonMarker';
+export type { PolygonMarkerState } from './markers/polygon-marker/PolygonMarkerState';
+export { PolylineMarker } from './markers/polyline-marker/PolylineMarker';
+export type { PolylineMarkerState } from './markers/polyline-marker/PolylineMarkerState';
 
 export {
   EventListenerRepository, MarkerAreaEvent, MarkerAreaRenderEvent, MarkerEvent

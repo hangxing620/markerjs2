@@ -35,7 +35,7 @@ export class LineWidthPanel extends ToolboxPanel {
     icon?: string,
     id?: string
   ) {
-    super(title, icon ? icon : Icon, id ? id : 'line-width-panel');
+    super(title, icon ? icon : process.env.NODE_ENV !== 'production' ? '1' : Icon, id ? id : 'line-width-panel');
     this.widths = widths;
     this.currentWidth = currentWidth;
 

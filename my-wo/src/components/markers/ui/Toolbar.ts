@@ -109,28 +109,28 @@ export class Toolbar {
     actionButtonBlock.style.whiteSpace = 'nowrap';
     this.uiContainer.appendChild(actionButtonBlock);
 
-    this.addActionButton(actionButtonBlock, CursorIcon, 'select', 'Select mode');
-    this.addActionButton(actionButtonBlock, DeleteIcon, 'delete', 'Delete marker');
+    this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : CursorIcon, 'select', 'Select mode');
+    this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : DeleteIcon, 'delete', 'Delete marker');
     if (this.uiStyleSettings.clearButtonVisible) {
-      this.addActionButton(actionButtonBlock, ClearIcon, 'clear', 'Delete all markers');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ClearIcon, 'clear', 'Delete all markers');
     }
     if (this.uiStyleSettings.undoButtonVisible) {
-      this.addActionButton(actionButtonBlock, UndoIcon, 'undo', 'Undo');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : UndoIcon, 'undo', 'Undo');
     }
     if (this.uiStyleSettings.redoButtonVisible) {
-      this.addActionButton(actionButtonBlock, RedoIcon, 'redo', 'Redo');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : RedoIcon, 'redo', 'Redo');
     }
     if (this.uiStyleSettings.zoomButtonVisible) {
-      this.addActionButton(actionButtonBlock, ZoomIcon, 'zoom', 'Zoom in');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ZoomIcon, 'zoom', 'Zoom in');
     }
     if (
       this.uiStyleSettings.zoomButtonVisible &&
       this.uiStyleSettings.zoomOutButtonVisible
     ) {
-      this.addActionButton(actionButtonBlock, ZoomOutIcon, 'zoom-out', 'Zoom out');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ZoomOutIcon, 'zoom-out', 'Zoom out');
     }
     if (this.uiStyleSettings.notesButtonVisible) {
-      this.addActionButton(actionButtonBlock, NotesIcon, 'notes', 'Notes');
+      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : NotesIcon, 'notes', 'Notes');
     }
 
     this.markerButtonBlock = document.createElement('div');
@@ -165,6 +165,7 @@ export class Toolbar {
         // console.log(mi.icon);
         buttonContainer.innerHTML = process.env.NODE_ENV !== 'production' ? '1' : mi.icon;
         // buttonContainer.innerHTML = mi.icon;
+        // buttonContainer.innerHTML = mi.icon + '?raw';
         // 绘制工具的点击事件
         buttonContainer.addEventListener('click', () => {
           this.markerToolbarButtonClicked(buttonContainer, mi);
@@ -191,8 +192,8 @@ export class Toolbar {
       this.uiStyleSettings.resultButtonBlockVisible !== false ? '' : 'none';
     this.uiContainer.appendChild(resultButtonBlock);
 
-    this.addActionButton(resultButtonBlock, CheckIcon, 'render', 'Save and close');
-    this.addActionButton(resultButtonBlock, CloseIcon, 'close', 'Close');
+    this.addActionButton(resultButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : CheckIcon, 'render', 'Save and close');
+    this.addActionButton(resultButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : CloseIcon, 'close', 'Close');
 
     this.markerjsContainer.appendChild(this.uiContainer);
     this.setSelectMode();

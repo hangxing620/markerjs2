@@ -80,7 +80,7 @@ export class CalloutMarker extends TextMarker {
       'Fill color',
       settings.defaultColorSet,
       this.bgColor,
-      FillColorIcon,
+      process.env.NODE_ENV !== 'production' ? '1' : FillColorIcon,
       'fill-color-panel'
     );
     this.bgColorPanel.onColorChanged = this.setBgColor;

@@ -35,7 +35,7 @@ export class LineStylePanel extends ToolboxPanel {
     icon?: string,
     id?: string
   ) {
-    super(title, icon ? icon : Icon, id ? id : 'line-style-panel');
+    super(title, icon ? icon : process.env.NODE_ENV !== 'production' ? '1' : Icon, id ? id : 'line-style-panel');
     this.styles = styles;
     this.currentStyle = currentStyle;
 

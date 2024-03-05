@@ -35,7 +35,7 @@ export class FontFamilyPanel extends ToolboxPanel {
     icon?: string,
     id?: string
   ) {
-    super(title, icon ? icon : Icon, id ? id : 'font-family-panel');
+    super(title, icon ? icon : process.env.NODE_ENV !== 'production' ? '1' : Icon, id ? id : 'font-family-panel');
     this.fonts = fonts;
     this.currentFont = currentFont;
 
