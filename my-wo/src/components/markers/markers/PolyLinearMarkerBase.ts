@@ -7,6 +7,9 @@ import { ResizeGrip } from './ResizeGrip';
 import { Settings } from '../core/Settings';
 import { PolyLinearMarkerBaseState } from './PolyLinearMarkerBaseState';
 import { MarkerBaseState } from '../core/MarkerBaseState';
+import { ColorPickerPanel } from '../ui/toolbox-panels/ColorPickerPanel';
+import { LineWidthPanel } from '../ui/toolbox-panels/LineWidthPanel';
+import { LineStylePanel } from '../ui/toolbox-panels/LineStylePanel';
 
 
 /**
@@ -57,6 +60,33 @@ export class PolyLinearMarkerBase extends MarkerBase {
    */
   protected activeGrip: ResizeGrip;
 
+
+  /**
+   * Line color.
+   */
+  protected strokeColor = 'transparent';
+  /**
+   * Line width.
+   */
+  protected strokeWidth = 0;
+  /**
+   * Line dash array.
+   */
+  protected strokeDasharray = '';
+
+  /**
+   * Color pickar panel for line color.
+   */
+  protected strokePanel: ColorPickerPanel;
+  /**
+   * Line width toolbox panel.
+   */
+  protected strokeWidthPanel: LineWidthPanel;
+  /**
+   * Line dash array toolbox panel.
+   */
+  protected strokeStylePanel: LineStylePanel;
+
   /**
    * Creates a LineMarkerBase object.
    * 
@@ -66,6 +96,35 @@ export class PolyLinearMarkerBase extends MarkerBase {
    */
   constructor(container: SVGGElement, overlayContainer: HTMLDivElement, settings: Settings) {
     super(container, overlayContainer, settings);
+
+    this.setStrokeColor = this.setStrokeColor.bind(this);
+    this.setStrokeWidth = this.setStrokeWidth.bind(this);
+    this.setStrokeDasharray = this.setStrokeDasharray.bind(this);
+
+    this.strokeColor = settings.defaultColor;
+    this.strokeWidth = settings.defaultStrokeWidth;
+    this.strokeDasharray = settings.defaultStrokeDasharray;
+
+    this.strokePanel = new ColorPickerPanel(
+      'Line color',
+      settings.defaultColorSet,
+      settings.defaultColor
+    );
+    this.strokePanel.onColorChanged = this.setStrokeColor;
+
+    this.strokeWidthPanel = new LineWidthPanel(
+      'Line width',
+      settings.defaultStrokeWidths,
+      settings.defaultStrokeWidth
+    );
+    this.strokeWidthPanel.onWidthChanged = this.setStrokeWidth;
+
+    this.strokeStylePanel = new LineStylePanel(
+      'Line style',
+      settings.defaultStrokeDasharrays,
+      settings.defaultStrokeDasharray
+    );
+    this.strokeStylePanel.onStyleChanged = this.setStrokeDasharray;
 
     this.setupControlBox();
   }
@@ -101,6 +160,7 @@ export class PolyLinearMarkerBase extends MarkerBase {
     this.manipulationStartY = point.y;
 
     if (this.state === 'new') {
+      this.removeTemporaryLine();
       this.points.push({
         x: point.x,
         y: point.y,
@@ -109,7 +169,7 @@ export class PolyLinearMarkerBase extends MarkerBase {
     }
 
     this.points.forEach((point, idx) => {
-      this.oldPoints[idx] = point;
+      this.oldPoints[idx] = JSON.parse(JSON.stringify(point));
     });
 
     if (this.state !== 'new') {
@@ -138,13 +198,7 @@ export class PolyLinearMarkerBase extends MarkerBase {
   public pointerUp(point: IPoint): void {
     const inState = this.state;
     super.pointerUp(point);
-    // if (this.state === 'creating') {
-    //   this.adjustVisual();
-    //   this.adjustControlBox()
-    //   this._state = 'select';
-    // } else {
-    //   this.manipulate(point);
-    // }
+    
     if (this.created) {
       this._state = 'select';
     }
@@ -161,8 +215,10 @@ export class PolyLinearMarkerBase extends MarkerBase {
   public dblClick(point: IPoint, target?: EventTarget): void {
     super.dblClick(point, target);
     // 结束绘制
+    this.removeTemporaryLine();
     this._state = 'creating';
     this.created = true;
+    this.removeLastPoint();
     this.adjustVisual();
     this.adjustControlBox();
   }
@@ -173,41 +229,57 @@ export class PolyLinearMarkerBase extends MarkerBase {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected adjustVisual(): void {}
 
+  /** 临时线段 */
+  private temporaryLine: SVGLineElement;
+  /** 临时线段的组 */
+  private temGel: SVGGElement;
+  /** 创建临时线段 */
+  private createTemporaryLine(x1: number, y1: number, x2: number, y2: number) {
+    if (this.temGel) {
+      this.removeTemporaryLine();
+    }
+    this.temGel = SvgHelper.createGroup();
+    this.temporaryLine = SvgHelper.createLine(x1, y1, x2, y2, [
+      ['stroke', this.strokeColor],
+      ['fill', 'none'],
+      ['stroke-width', this.strokeWidth.toString()],
+    ]);
+
+    this.temGel.appendChild(this.temporaryLine);
+    
+    this.container.appendChild(this.temGel);
+  }
+  /** 删除临时线段 */
+  private removeTemporaryLine() {
+    this.temGel && this.container.removeChild(this.temGel) && (this.temGel = null);
+  }
+
+  /** 因为dblclick，导致多绘制了一个点，所以需要清除这个点 */
+  private removeLastPoint() {
+    this.points.pop();
+    const grip = this.grips.pop();
+    this.controlBox.removeChild(grip.visual);
+  }
+
   /**
    * Handles marker manipulation (move, resize, rotate, etc.).
    * 
    * @param point - event coordinates.
    */
   public manipulate(point: IPoint): void {
-    if (this.state === 'creating') {
+    if (this.state === 'new') {
+      if (this.points.length === 0) return;
+      const [{x , y}] = this.points.slice(-1);
+      this.createTemporaryLine(x, y, point.x, point.y);
+    } else if (this.state === 'creating') {
       this.resize(point);
     } else if (this.state === 'move') {
-      const points: IPoint[] = [];
-      let noLimit = false;
-      this.points.forEach((point, idx) => {
-        const x = this.oldPoints[idx].x + point.x - this.manipulationStartX;
-        const y = this.oldPoints[idx].y + point.y - this.manipulationStartY;
-        if (x < 0 || y < 0) {
-          noLimit = true;
-        }
-        points.push({
-          x,
-          y
-        });
+      const diffX = point.x - this.manipulationStartX;
+      const diffY = point.y - this.manipulationStartY;
+      this.points.forEach((item, index) => {
+        item.x = this.oldPoints[index].x + diffX;
+        item.y = this.oldPoints[index].y + diffY;
       });
-      if (!noLimit) {
-        this.points = points;
-      }
-      // this.points.forEach((point, idx) => {
-      //   const x = this.oldPoints[idx].x - this.manipulationStartX - point.x;
-      //   const y = this.oldPoints[idx].y - this.manipulationStartY - point.y;
-      //   if (x < 0 || y< 0) {
-      //   } else {
-      //     point.x = x;
-      //     point.y = y;
-      //   }
-      // });
-      console.log(JSON.stringify(this.points));
       this.adjustVisual();
       this.adjustControlBox();
     } else if (this.state === 'resize') {
@@ -356,5 +428,33 @@ export class PolyLinearMarkerBase extends MarkerBase {
 
     this.adjustVisual();
     this.adjustControlBox();
+  }
+
+  /**
+   * Sets line color.
+   * @param color - new color.
+   */
+  protected setStrokeColor(color: string): void {
+    this.strokeColor = color;
+    this.adjustVisual();
+    this.colorChanged(color);
+  }
+  /**
+   * Sets line width.
+   * @param width - new width.
+   */
+  protected setStrokeWidth(width: number): void {
+    this.strokeWidth = width
+    this.adjustVisual();
+  }
+
+  /**
+   * Sets line dash array.
+   * @param dashes - new dash array.
+   */
+  protected setStrokeDasharray(dashes: string): void {
+    this.strokeDasharray = dashes;
+    this.adjustVisual();
+    this.stateChanged();
   }
 }

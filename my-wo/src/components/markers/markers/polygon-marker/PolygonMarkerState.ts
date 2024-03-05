@@ -3,17 +3,19 @@ import { PolyLinearMarkerBaseState } from '../PolyLinearMarkerBaseState';
 /**
  * Represents state of a {@link LineMarker}.
  */
-export interface PolylineMarkerState extends PolyLinearMarkerBaseState {
+export interface PolygonMarkerState extends PolyLinearMarkerBaseState {
   /**
-   * Polyline color.
+   * Polygon color.
    */
   strokeColor: string,
   /**
-   * Polyline width.
+   * Polygon width.
    */
   strokeWidth: number,
   /**
-   * Polyline dash array.
+   * Polygon dash array.
    */
-  strokeDasharray: string
+  strokeDasharray: string,
+  fillColor: string,
+  opacity: number,
 }

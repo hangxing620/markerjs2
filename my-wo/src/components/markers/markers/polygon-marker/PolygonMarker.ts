@@ -1,397 +1,316 @@
-// import { IPoint } from '../../core/IPoint';
-// import { SvgHelper } from '../../core/SvgHelper';
-// import { RectangularBoxMarkerBase } from '../RectangularBoxMarkerBase';
-// import { Settings } from '../../core/Settings';
-// import Icon from './polygon-marker-icon.svg';
-// import { ColorPickerPanel } from '../../ui/toolbox-panels/ColorPickerPanel';
-// import { ToolboxPanel } from '../../ui/ToolboxPanel';
-// import { FreehandMarkerState } from './FreehandMarkerState';
-// import { MarkerBaseState } from '../../core/MarkerBaseState';
-// import { LineWidthPanel } from '../../ui/toolbox-panels/LineWidthPanel';
-// import { RectangleMarkerState } from '../RectangleMarkerState';
+import { IPoint } from "../../core/IPoint";
+import { MarkerBaseState } from "../../core/MarkerBaseState";
+import { Settings } from "../../core/Settings";
+import { SvgHelper } from "../../core/SvgHelper";
+import { ToolboxPanel } from "../../ui/ToolboxPanel";
+import { ColorPickerPanel } from "../../ui/toolbox-panels/ColorPickerPanel";
+import { LineStylePanel } from "../../ui/toolbox-panels/LineStylePanel";
+import { LineWidthPanel } from "../../ui/toolbox-panels/LineWidthPanel";
+import { OpacityPanel } from "../../ui/toolbox-panels/OpacityPanel";
+import { PolyLinearMarkerBase } from "../PolyLinearMarkerBase";
+import { PolygonMarkerState } from "./PolygonMarkerState";
+import Icon from './polygon-marker-icon.svg';
+import FillColorIcon from '../../ui/toolbox-panels/fill-color-icon.svg';
 
 
-// export class PolygonMarker extends RectangularBoxMarkerBase {
-//   /**
-//    * String type name of the marker type. 
-//    * 
-//    * Used when adding {@link MarkerArea.availableMarkerTypes} via a string and to save and restore state.
-//    */
-//   public static typeName = 'PolygonMarker';
+export class PolygonMarker extends PolyLinearMarkerBase {
+ /**
+   * String type name of the marker type. 
+   * 
+   * Used when adding {@link MarkerArea.availableMarkerTypes} via a string and to save and restore state.
+   */
+  public static typeName = 'PolygonMarker';
+    
+  /**
+   * Marker type title (display name) used for accessibility and other attributes.
+   */
+  public static title = 'Polygon marker';
+  /**
+   * SVG icon markup displayed on toolbar buttons.
+   */
+  public static icon = Icon;
+  
+  /**
+   * Visible marker polyline.
+   */
+  protected visibleLine: SVGPolylineElement;
 
-//   /**
-//    * Marker type title (display name) used for accessibility and other attributes.
-//    */
-//   public static title = 'Polygon marker';
-//   /**
-//    * SVG icon markup displayed on toolbar buttons.
-//    */
-//   public static icon = Icon;
+  /** 实际绘制成功后的多边形 */
+  protected visiblePolygon: SVGPolygonElement;
 
-//   /**
-//    * Marker color.
-//    */
-//   protected color = 'transparent';
-//   /**
-//    * Marker's stroke width.
-//    */
-//   protected lineWidth = 3;
+  protected fillColor = 'transparent';
+  /**
+   * Line color.
+   */
+  protected strokeColor = 'transparent';
+  /**
+   * Line width.
+   */
+  protected strokeWidth = 0;
+  /**
+   * Line dash array.
+   */
+  protected strokeDasharray = '';
+  protected opacity = 1;
 
-//   private colorPanel: ColorPickerPanel;
-//   private lineWidthPanel: LineWidthPanel;
-
-
-//   private canvasElement: HTMLCanvasElement;
-//   private canvasContext: CanvasRenderingContext2D;
-
-//   private drawingImage: SVGImageElement;
-//   private drawingImgUrl: string;
-
-//   private drawing = false;
-
-//   private pixelRatio = 1;
-
-//   /**
-//    * Ellipse fill color.
-//    */
-//   protected fillColor = 'transparent';
-//   /**
-//    * Ellipse border color.
-//    */
-//   protected strokeColor = 'transparent';
-//   /**
-//    * Ellipse border line width.
-//    */
-//   protected strokeWidth = 0;
-//   /**
-//    * Ellipse border dash array.
-//    */
-//   protected strokeDasharray = '';
-//   /**
-//    * Ellipse opacity (0..1).
-//    */
-//   protected opacity = 1;
-
-//   /**
-//    * Creates a new marker.
-//    *
-//    * @param container - SVG container to hold marker's visual.
-//    * @param overlayContainer - overlay HTML container to hold additional overlay elements while editing.
-//    * @param settings - settings object containing default markers settings.
-//    */
-//   constructor(
-//     container: SVGGElement,
-//     overlayContainer: HTMLDivElement,
-//     settings: Settings
-//   ) {
-//     super(container, overlayContainer, settings);
-
-//     this.color = settings.defaultColor;
-//     this.lineWidth = settings.defaultStrokeWidth;
-//     this.pixelRatio = settings.freehandPixelRatio;
-
-//     this.setColor = this.setColor.bind(this);
-//     this.addCanvas = this.addCanvas.bind(this);
-//     this.finishCreation = this.finishCreation.bind(this);
-//     this.setLineWidth = this.setLineWidth.bind(this);
-
-//     this.colorPanel = new ColorPickerPanel(
-//       'Color',
-//       settings.defaultColorSet,
-//       settings.defaultColor
-//     );
-//     this.colorPanel.onColorChanged = this.setColor;
-
-//     this.lineWidthPanel = new LineWidthPanel(
-//       'Line width',
-//       settings.defaultStrokeWidths,
-//       settings.defaultStrokeWidth
-//     );
-//     this.lineWidthPanel.onWidthChanged = this.setLineWidth;
-
-//   }
-
-//   /**
-//    * Returns true if passed SVG element belongs to the marker. False otherwise.
-//    * 
-//    * @param el - target element.
-//    */
-//   public ownsTarget(el: EventTarget): boolean {
-//     if (
-//       super.ownsTarget(el) ||
-//       el === this.visual ||
-//       el === this.drawingImage
-//     ) {
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-
-//   private createVisual() {
-//     this.visual = SvgHelper.createGroup();
-//     this.drawingImage = SvgHelper.createImage();
-//     this.visual.appendChild(this.drawingImage);
-
-//     const translate = SvgHelper.createTransform();
-//     this.visual.transform.baseVal.appendItem(translate);
-//     this.addMarkerVisualToContainer(this.visual);
-//   }
-
-//   /**
-//    * Handles pointer (mouse, touch, stylus, etc.) down event.
-//    * 
-//    * @param point - event coordinates.
-//    * @param target - direct event target element.
-//    */
-//   public pointerDown(point: IPoint, target?: EventTarget): void {
-//     if (this.state === 'new') {
-//       this.addCanvas();
-
-//       this.createVisual();
-
-//       this._state = 'creating';
-//     }
-
-//     if (this.state === 'creating') {
-//       this.canvasContext.strokeStyle = this.color;
-//       this.canvasContext.lineWidth = this.lineWidth;
-//       this.canvasContext.beginPath();
-//       this.canvasContext.moveTo(point.x, point.y);
-//       this.drawing = true;
-//     } else {
-//       super.pointerDown(point, target);
-//     }
-//   }
-
-//   /**
-//    * Handles marker manipulation (move, resize, rotate, etc.).
-//    * 
-//    * @param point - event coordinates.
-//    */
-//   public manipulate(point: IPoint): void {
-//     if (this.state === 'creating') {
-//       if (this.drawing) {
-//         this.canvasContext.lineTo(point.x, point.y);
-//         this.canvasContext.stroke();
-//       }
-//     } else {
-//       super.manipulate(point);
-//     }
-//   }
-
-//   /**
-//    * Resize marker based on current pointer coordinates and context.
-//    * @param point 
-//    */
-//   protected resize(point: IPoint): void {
-//     super.resize(point);
-//     SvgHelper.setAttributes(this.visual, [
-//       ['width', this.width.toString()],
-//       ['height', this.height.toString()],
-//     ]);
-//     SvgHelper.setAttributes(this.drawingImage, [
-//       ['width', this.width.toString()],
-//       ['height', this.height.toString()],
-//     ]);
-//   }
-
-//   /**
-//    * Handles pointer (mouse, touch, stylus, etc.) up event.
-//    * 
-//    * @param point - event coordinates.
-//    */
-//   public pointerUp(point: IPoint): void {
-//     if (this._state === 'creating') {
-//       if (this.drawing) {
-//         this.canvasContext.closePath();
-//         this.drawing = false;
-//         if (this.globalSettings.newFreehandMarkerOnPointerUp) {
-//           this.finishCreation();
-//         }
-//       }
-//     } else {
-//       super.pointerUp(point);
-//     }
-//   }
-
-//   private addCanvas() {
-//     this.overlayContainer.innerHTML = '';
-
-//     this.canvasElement = document.createElement('canvas');
-//     this.canvasElement.width = this.overlayContainer.clientWidth * this.pixelRatio;
-//     this.canvasElement.height = this.overlayContainer.clientHeight * this.pixelRatio;
-//     this.canvasContext = this.canvasElement.getContext('2d');
-//     this.canvasContext.scale(this.pixelRatio, this.pixelRatio);
-//     this.overlayContainer.appendChild(this.canvasElement);
-//   }
-
-//   /**
-//    * Selects this marker and displays appropriate selected marker UI.
-//    */
-//   public select(): void {
-//     if (this.state === 'creating') {
-//       this.finishCreation();
-//     }
-//     super.select();
-//   }
-
-//   /**
-//    * Deselects this marker and hides selected marker UI.
-//    */
-//   public deselect(): void {
-//     if (this.state === 'creating') {
-//       this.finishCreation();
-//     }
-//     super.deselect();
-//   }
-
-//   private finishCreation() {
-//     const imgData = this.canvasContext.getImageData(
-//       0,
-//       0,
-//       this.canvasElement.width,
-//       this.canvasElement.height
-//     );
-
-//     let [startX, startY, endX, endY] = [
-//       this.canvasElement.width + 1,
-//       this.canvasElement.height + 1,
-//       -1,
-//       -1,
-//     ];
-//     let containsData = false;
-//     for (let row = 0; row < this.canvasElement.height; row++) {
-//       for (let col = 0; col < this.canvasElement.width; col++) {
-//         const pixAlpha =
-//           imgData.data[row * this.canvasElement.width * 4 + col * 4 + 3];
-//         if (pixAlpha > 0) {
-//           containsData = true;
-//           if (row < startY) {
-//             startY = row;
-//           }
-//           if (col < startX) {
-//             startX = col;
-//           }
-//           if (row > endY) {
-//             endY = row;
-//           }
-//           if (col > endX) {
-//             endX = col;
-//           }
-//         }
-//       }
-//     }
-
-//     if (containsData) {
-//       this.left = startX / this.pixelRatio;
-//       this.top = startY / this.pixelRatio;
-//       this.width = (endX - startX) / this.pixelRatio;
-//       this.height = (endY - startY) / this.pixelRatio;
-
-//       const tmpCanvas = document.createElement('canvas');
-//       tmpCanvas.width = endX - startX;
-//       tmpCanvas.height = endY - startY;
-//       const tmpCtx = tmpCanvas.getContext('2d');
-//       tmpCtx.putImageData(
-//         this.canvasContext.getImageData(
-//           startX,
-//           startY,
-//           endX - startX,
-//           endY - startY
-//         ),
-//         0,
-//         0
-//       );
-
-//       this.drawingImgUrl = tmpCanvas.toDataURL('image/png');
-//       this.setDrawingImage();
-
-//       this._state = 'select';
-//       if (this.onMarkerCreated) {
-//         this.onMarkerCreated(this);
-//       }
-//     }
-//     this.overlayContainer.innerHTML = '';
-//   }
-
-//   private setDrawingImage() {
-//     SvgHelper.setAttributes(this.drawingImage, [
-//       ['width', this.width.toString()],
-//       ['height', this.height.toString()],
-//     ]);
-//     SvgHelper.setAttributes(this.drawingImage, [['href', this.drawingImgUrl]]);
-//     this.moveVisual({ x: this.left, y: this.top });
-//   }
-
-//   /**
-//    * Sets marker drawing color.
-//    * @param color - new color.
-//    */
-//   protected setColor(color: string): void {
-//     this.color = color;
-//     this.colorChanged(color);
-//   }
-
-//   /**
-//    * Sets line width.
-//    * @param width - new line width
-//    */
-//    protected setLineWidth(width: number): void {
-//     this.lineWidth = width;
-//   }
+  
+  protected strokePanel: ColorPickerPanel;
+  protected fillPanel: ColorPickerPanel;
+  protected strokeWidthPanel: LineWidthPanel;
+  protected strokeStylePanel: LineStylePanel;
+  protected opacityPanel: OpacityPanel;
 
 
-//   /**
-//    * Returns the list of toolbox panels for this marker type.
-//    */
-//   public get toolboxPanels(): ToolboxPanel[] {
-//     if (this.state === 'new' || this.state === 'creating') {
-//       return [this.colorPanel, this.lineWidthPanel];
-//     } else {
-//       return [];
-//     }
-//   }
+  constructor(container: SVGGElement, overlayContainer: HTMLDivElement, settings: Settings) {
+    super(container, overlayContainer, settings);
 
-//   /**
-//    * Returns current marker state that can be restored in the future.
-//    */
-//   public getState(): RectangleMarkerState {
-//     const result: RectangleMarkerState = Object.assign({
-//       fillColor: this.fillColor,
-//       strokeColor: this.strokeColor,
-//       strokeWidth: this.strokeWidth,
-//       strokeDasharray: this.strokeDasharray,
-//       opacity: this.opacity
-//     }, super.getState());
-//     result.typeName = PolygonMarker.typeName;
+    this.setStrokeColor = this.setStrokeColor.bind(this);
+    this.setFillColor = this.setFillColor.bind(this);
+    this.setStrokeWidth = this.setStrokeWidth.bind(this);
+    this.setOpacity = this.setOpacity.bind(this);
+    this.setStrokeDasharray = this.setStrokeDasharray.bind(this);
+    this.createVisual = this.createVisual.bind(this);
 
-//     return result;
-//   }
-//   /**
-//    * Restores previously saved marker state.
-//    * 
-//    * @param state - previously saved state.
-//    */
-//   public restoreState(state: MarkerBaseState): void {
-//     this.createVisual();
-//     super.restoreState(state);
-//     this.drawingImgUrl = (state as FreehandMarkerState).drawingImgUrl;
-//     this.setDrawingImage();
-//   }
+    this.strokeColor = settings.defaultColor;
+    this.strokeWidth = settings.defaultStrokeWidth;
+    this.strokeDasharray = settings.defaultStrokeDasharray;
 
-//   /**
-//    * Scales marker. Used after the image resize.
-//    * 
-//    * @param scaleX - horizontal scale
-//    * @param scaleY - vertical scale
-//    */
-//   public scale(scaleX: number, scaleY: number): void {
-//     super.scale(scaleX, scaleY);
+    this.strokePanel = new ColorPickerPanel(
+      'Line color',
+      settings.defaultColorSet,
+      settings.defaultColor
+    );
+    this.strokePanel.onColorChanged = this.setStrokeColor;
 
-//     this.setDrawingImage();
-//   }
+    this.strokeWidthPanel = new LineWidthPanel(
+      'Line width',
+      settings.defaultStrokeWidths,
+      settings.defaultStrokeWidth
+    );
+    this.strokeWidthPanel.onWidthChanged = this.setStrokeWidth;
 
-// }
+    this.strokeStylePanel = new LineStylePanel(
+      'Line style',
+      settings.defaultStrokeDasharrays,
+      settings.defaultStrokeDasharray
+    );
+    this.strokeStylePanel.onStyleChanged = this.setStrokeDasharray;
 
-export {}
+    this.fillPanel = new ColorPickerPanel(
+      'Fill color',
+      [...settings.defaultColorSet, 'transparent'],
+      this.fillColor,
+      FillColorIcon,
+      'fill-color-panel'
+    );
+    this.fillPanel.onColorChanged = this.setFillColor;
+
+    this.opacityPanel = new OpacityPanel(
+      'Opacity',
+      settings.defaultOpacitySteps,
+      this.opacity
+    );
+    this.opacityPanel.onOpacityChanged = this.setOpacity;
+  }
+
+  public ownsTarget(el: EventTarget): boolean {
+    if (
+      super.ownsTarget(el) ||
+      el === this.visual ||
+      el === this.visibleLine ||
+      // @ts-ignore
+      (this.visibleLine && this.visibleLine.getAttribute('points').includes(el.getAttribute('points'))) ||
+      // @ts-ignore
+      (this.visiblePolygon && this.visiblePolygon.getAttribute('points').includes(el.getAttribute('points')))
+      ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  getPointsToString(points: IPoint[]): string {
+    let str = '';
+    points.forEach(point => {
+      str += `${point.x},${point.y} `
+    });
+    if (str.length > 0) {
+      str = str.slice(0, str.length - 1);
+    }
+    return str;
+  }
+
+  private createVisual() {
+    if (this.visual) return;
+    this.visual = SvgHelper.createGroup();
+    const str = this.getPointsToString(this.points);
+    this.visibleLine = SvgHelper.createPolyline(
+      str,
+      [
+        ['stroke', this.strokeColor],
+        ['fill', 'rgba(155, 255, 0, 0.2)'],
+        ['opacity', this.opacity.toString()],
+        ['stroke-width', this.strokeWidth.toString()],
+      ]
+    );
+
+    this.visual.appendChild(this.visibleLine);
+
+    this.addMarkerVisualToContainer(this.visual);
+  }
+
+  /**
+   * Sets line color.
+   * @param color - new color.
+   */
+  protected setStrokeColor(color: string): void {
+    this.strokeColor = color;
+    this.adjustVisual();
+    this.colorChanged(color);
+  }
+  /**
+   * Sets line width.
+   * @param width - new width.
+   */
+  protected setStrokeWidth(width: number): void {
+    this.strokeWidth = width
+    this.adjustVisual();
+  }
+
+  /**
+   * Sets line dash array.
+   * @param dashes - new dash array.
+   */
+  protected setStrokeDasharray(dashes: string): void {
+    this.strokeDasharray = dashes;
+    this.adjustVisual();
+    this.stateChanged();
+  }
+
+  /**
+   * Sets marker's opacity.
+   * @param opacity - new opacity value (0..1).
+   */
+  protected setOpacity(opacity: number): void {
+    this.opacity = opacity;
+    if (this.visual) {
+      SvgHelper.setAttributes(this.visual, [['opacity', this.opacity.toString()]]);
+    }
+    this.stateChanged();
+  }
+
+  /**
+   * Sets marker's fill (background) color.
+   * @param color - new fill color.
+   */
+  protected setFillColor(color: string): void {
+    this.fillColor = color;
+    if (this.visual) {
+      SvgHelper.setAttributes(this.visual, [['fill', this.fillColor]]);
+    }
+    this.fillColorChanged(color);
+    this.stateChanged();
+  }
+
+  /**
+   * Returns the list of toolbox panels for this marker type.
+   */
+  public get toolboxPanels(): ToolboxPanel[] {
+    return [this.strokePanel, this.strokeWidthPanel, this.strokeStylePanel];
+  }
+
+  /**
+   * Returns current marker state that can be restored in the future.
+   */
+  public getState(): PolygonMarkerState {
+    const result: PolygonMarkerState = Object.assign({
+      strokeColor: this.strokeColor,
+      strokeWidth: this.strokeWidth,
+      strokeDasharray: this.strokeDasharray,
+      fillColor: this.fillColor,
+      opacity: this.opacity,
+    }, super.getState());
+    result.typeName = PolygonMarker.typeName;
+
+    return result;
+  }
+
+  /**
+   * Handles pointer (mouse, touch, stylus, etc.) down event.
+   * 
+   * @param point - event coordinates.
+   * @param target - direct event target element.
+   */
+  public pointerDown(point: IPoint, target?: EventTarget): void {
+    super.pointerDown(point, target);
+    if (this.state === 'new') {
+      this.createVisual();
+      this.adjustVisual();
+    }
+  }
+
+  /**
+   * 结束线段的绘制，将Polyline变更为Polygon
+   * @param point 
+   * @param target 
+   */
+  public dblClick(point: IPoint, target?: EventTarget): void {
+    super.dblClick(point, target);
+    this.container.removeChild(this.visual);
+
+    const str = this.getPointsToString(this.points);
+    
+    this.visiblePolygon = SvgHelper.createPolygon(
+      str,
+      [
+        ['stroke', this.strokeColor],
+        ['fill', 'rgba(155, 255, 0, 0.2)'],
+        ['opacity', this.opacity.toString()],
+        ['stroke-width', this.strokeWidth.toString()],
+      ]
+    );
+    this.visual = SvgHelper.createGroup();
+    this.visual.appendChild(this.visiblePolygon);
+    this.addMarkerVisualToContainer(this.visual);
+  }
+
+  /**
+   * Adjusts visual after manipulation.
+   */
+  protected adjustVisual(): void {
+    let visible = this.visibleLine;
+    if (this.created) {
+      visible = this.visiblePolygon;
+    }
+    if (visible) {
+      const str = this.getPointsToString(this.points);
+
+      visible.setAttribute('points', str);
+
+      SvgHelper.setAttributes(visible, [['stroke', this.strokeColor]]);
+      // SvgHelper.setAttributes(visible, [['fill', this.fillColor]]);
+      SvgHelper.setAttributes(visible, [['opacity', this.opacity.toString()]]);
+      SvgHelper.setAttributes(visible, [['stroke-width', this.strokeWidth.toString()]]);
+      SvgHelper.setAttributes(visible, [['stroke-dasharray', this.strokeDasharray.toString()]]);
+    }
+  }
+
+  /**
+   * Restores previously saved marker state.
+   * 
+   * @param state - previously saved state.
+   */
+  public restoreState(state: MarkerBaseState): void {
+    super.restoreState(state);
+
+    const lmState = state as PolygonMarkerState;
+    this.strokeColor = lmState.strokeColor;
+    this.strokeWidth = lmState.strokeWidth;
+    this.strokeDasharray = lmState.strokeDasharray;
+    this.fillColor = lmState.fillColor;
+    this.opacity = lmState.opacity;
+
+    this.createVisual();
+    this.adjustVisual();
+  }
+}

@@ -35,6 +35,7 @@ import {
   MarkerEvent,
 } from './core/Events';
 import { PolylineMarker } from './markers/polyline-marker/PolylineMarker';
+import { PolygonMarker } from './markers/polygon-marker/PolygonMarker' ;
 
 /**
  * @ignore
@@ -135,6 +136,7 @@ export class MarkerArea {
       EllipseFrameMarker,
       EllipseMarker,
       PolylineMarker,
+      PolygonMarker,
       HighlightMarker,
       CalloutMarker,
       MeasurementMarker,
@@ -159,6 +161,7 @@ export class MarkerArea {
       TextMarker,
       EllipseMarker,
       PolylineMarker,
+      PolygonMarker,
       HighlightMarker,
       CalloutMarker,
     ];

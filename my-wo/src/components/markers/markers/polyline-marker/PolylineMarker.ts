@@ -127,7 +127,6 @@ export class PolylineMarker extends PolyLinearMarkerBase {
     this.selectorLine = SvgHelper.createPolyline(
       str,
       [
-        ['store', this.strokeColor],
         ['fill', 'none'],
         ['stroke', 'transparent'],
         ['stroke-width', (this.strokeWidth + 10).toString()],
@@ -136,7 +135,7 @@ export class PolylineMarker extends PolyLinearMarkerBase {
     this.visibleLine = SvgHelper.createPolyline(
       str,
       [
-        ['store', this.strokeColor],
+        ['stroke', this.strokeColor],
         ['fill', 'none'],
         ['stroke-width', this.strokeWidth.toString()],
       ]
