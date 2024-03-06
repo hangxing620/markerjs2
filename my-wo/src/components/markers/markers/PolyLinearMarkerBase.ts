@@ -214,13 +214,15 @@ export class PolyLinearMarkerBase extends MarkerBase {
    */
   public dblClick(point: IPoint, target?: EventTarget): void {
     super.dblClick(point, target);
-    // 结束绘制
-    this.removeTemporaryLine();
-    this._state = 'creating';
-    this.created = true;
-    this.removeLastPoint();
-    this.adjustVisual();
-    this.adjustControlBox();
+    if (this._state === 'new') {
+      // 结束绘制
+      this.removeTemporaryLine();
+      this._state = 'creating';
+      this.created = true;
+      this.removeLastPoint();
+      this.adjustVisual();
+      this.adjustControlBox();
+    }
   }
 
   /**
@@ -369,7 +371,7 @@ export class PolyLinearMarkerBase extends MarkerBase {
    * Updates manipulation grip layout.
    */
   protected positionGrips(): void {
-    if (this.grips.length === 0) return;
+    if (!this.grips || this.grips.length === 0) return;
     const gripSize = this.grips[0].GRIP_SIZE;
 
     this.grips.forEach((grip, idx) => {

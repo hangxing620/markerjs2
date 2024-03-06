@@ -134,7 +134,6 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
    * Creates marker visual.
    */
   protected createVisual(): void {
-    console.log(`width: ${this.width}, height: ${this.height}`);
     this.visual = SvgHelper.createEllipse(this.width / 2, this.height / 2, [
       ['fill', this.fillColor],
       ['stroke', this.strokeColor],
@@ -185,7 +184,6 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
    */
   protected setSize(): void {
     super.setSize();
-    console.log(`pointerUp--width: ${this.width}, height: ${this.height}`);
     SvgHelper.setAttributes(this.visual, [
       ['cx', (this.width / 2).toString()],
       ['cy', (this.height / 2).toString()],

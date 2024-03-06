@@ -1,4 +1,6 @@
+import { IPoint } from '../../core/IPoint';
 import { PolyLinearMarkerBaseState } from '../PolyLinearMarkerBaseState';
+import { ResizeGrip } from '../ResizeGrip';
 
 /**
  * Represents state of a {@link LineMarker}.
@@ -15,5 +17,8 @@ export interface PolylineMarkerState extends PolyLinearMarkerBaseState {
   /**
    * Polyline dash array.
    */
-  strokeDasharray: string
+  strokeDasharray: string,
+  points: IPoint[],
+  oldPoints: IPoint[],
+  grips: ResizeGrip[],
 }

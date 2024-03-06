@@ -189,7 +189,10 @@ export class PolylineMarker extends PolyLinearMarkerBase {
     const result: PolylineMarkerState = Object.assign({
       strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,
-      strokeDasharray: this.strokeDasharray
+      strokeDasharray: this.strokeDasharray,
+      points: this.points,
+      oldPoints: this.oldPoints,
+      grips: this.grips,
     }, super.getState());
     result.typeName = PolylineMarker.typeName;
 
@@ -248,8 +251,15 @@ export class PolylineMarker extends PolyLinearMarkerBase {
     this.strokeColor = lmState.strokeColor;
     this.strokeWidth = lmState.strokeWidth;
     this.strokeDasharray = lmState.strokeDasharray;
-
+    this.points = lmState.points;
+    this.oldPoints = [];
+    lmState.points.forEach(p => {
+      this.oldPoints.push(JSON.parse(JSON.stringify(p)));
+    });
+    
+    this.addControlGrips();
     this.createVisual();
+    this.created = true;
     this.adjustVisual();
   }
 }

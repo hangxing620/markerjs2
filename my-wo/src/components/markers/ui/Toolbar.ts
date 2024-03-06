@@ -107,26 +107,34 @@ export class Toolbar {
     const actionButtonBlock = document.createElement('div');
     actionButtonBlock.className = this.toolbarBlockStyleClass.name;
     actionButtonBlock.style.whiteSpace = 'nowrap';
+    // 操作步骤容器，添加到UI容器中
     this.uiContainer.appendChild(actionButtonBlock);
 
+    // 【选择】
     this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : CursorIcon, 'select', 'Select mode');
+    // 【删除】
     this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : DeleteIcon, 'delete', 'Delete marker');
     if (this.uiStyleSettings.clearButtonVisible) {
-      this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ClearIcon, 'clear', 'Delete all markers');
-    }
-    if (this.uiStyleSettings.undoButtonVisible) {
+       // 【清除】
+       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ClearIcon, 'clear', 'Delete all markers');
+      }
+      if (this.uiStyleSettings.undoButtonVisible) {
+      // 【上一步】
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : UndoIcon, 'undo', 'Undo');
     }
     if (this.uiStyleSettings.redoButtonVisible) {
+      // 【重做】
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : RedoIcon, 'redo', 'Redo');
     }
     if (this.uiStyleSettings.zoomButtonVisible) {
+      // 【放大】
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ZoomIcon, 'zoom', 'Zoom in');
     }
     if (
       this.uiStyleSettings.zoomButtonVisible &&
       this.uiStyleSettings.zoomOutButtonVisible
     ) {
+      // 【缩小 or 还原】
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ZoomOutIcon, 'zoom-out', 'Zoom out');
     }
     if (this.uiStyleSettings.notesButtonVisible) {
@@ -137,6 +145,7 @@ export class Toolbar {
     this.markerButtonBlock.className = this.toolbarBlockStyleClass.name;
     this.markerButtonBlock.style.flexGrow = '2';
     this.markerButtonBlock.style.textAlign = 'center';
+    // 图形操作按钮到UI容器中
     this.uiContainer.appendChild(this.markerButtonBlock);
 
     this.markerButtonOverflowBlock = document.createElement('div');
@@ -150,7 +159,7 @@ export class Toolbar {
     this.markerButtonOverflowBlock.style.display = 'none';
     this.uiContainer.appendChild(this.markerButtonOverflowBlock);
 
-    // 绘制工具marker列表
+    // 绘制工具marker列表，可操作的图形
     if (this.markerItems) {
       this.markerItems.forEach((mi) => {
         const buttonContainer = document.createElement('div');
@@ -174,6 +183,7 @@ export class Toolbar {
         this.buttons.push(buttonContainer);
         this.markerButtons.push(buttonContainer);
       });
+      // 因为图形操作按钮显示超出，所以增加一个超出的元素展示
       this.overflowButton = document.createElement('div');
       this.overflowButton.className = `${this.toolbarButtonStyleClass.name} ${
         this.uiStyleSettings.toolbarButtonStyleColorsClassName
@@ -206,6 +216,7 @@ export class Toolbar {
 
   /**
    * Add a listener to the toolbar button click event.
+   * 添加【图形按钮】的监听列表函数
    * @param listener
    */
   public addButtonClickListener(listener: ToolbarButtonClickHandler): void {
@@ -235,6 +246,7 @@ export class Toolbar {
 
   /**
    * Adjusts toolbar layout.
+   * 调整工具栏布局，和添加marker按钮标记
    */
   public adjustLayout(): void {
     if (this.markerButtons && this.markerButtons.length > 0) {

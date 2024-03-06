@@ -78,7 +78,8 @@ export class Settings {
   /**
    * Default display mode.
    */
-  public displayMode: DisplayMode = 'inline';
+  // public displayMode: DisplayMode = 'inline';
+  public displayMode: DisplayMode = 'popup';
 
   /**
    * Font family options.
@@ -93,8 +94,9 @@ export class Settings {
 
   /**
    * Margin in pixels between marker.js popup UI and window borders.
+   * 默认值是30
    */
-  public popupMargin = 30;
+  public popupMargin = 0;
 
   /**
    * Create a new Freehand marker for every stroke.

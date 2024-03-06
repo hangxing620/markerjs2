@@ -175,7 +175,6 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.left = point.x;
       this.top = point.y;
     }
-    console.log('有没有我')
 
     this.manipulationStartLeft = this.left;
     this.manipulationStartTop = this.top;
@@ -194,12 +193,9 @@ export class RectangularBoxMarkerBase extends MarkerBase {
       this.activeGrip = this.controlGrips.findGripByVisual(target as SVGGraphicsElement);
       if (this.activeGrip !== undefined) {
         this._state = 'resize';
-        console.log('有没有我resize')
 
       } else if (this.rotatorGrip !== undefined && this.rotatorGrip.ownsTarget(target)) {
         this.activeGrip = this.rotatorGrip;
-        console.log('有没有我rotatePoint')
-
 
         const rotatedCenter = this.rotatePoint({x: this.centerX, y: this.centerY});
         this.left = rotatedCenter.x - this.width / 2;
@@ -228,7 +224,6 @@ export class RectangularBoxMarkerBase extends MarkerBase {
    */
   public pointerUp(point: IPoint): void {
     const inState = this.state;
-    console.log(`Pointer up event --children-- Point: ${JSON.stringify(point)}`);
     super.pointerUp(point);
     if (this.state === 'creating' && this.width < 10 && this.height < 10) {
       this.width = this.defaultSize.x;
@@ -272,7 +267,6 @@ export class RectangularBoxMarkerBase extends MarkerBase {
         this.manipulationStartTop +
         (rotatedPoint.y - this.manipulationStartTop) -
         this.offsetY;
-      console.log(`move-- left: ${this.left}, top: ${this.top}`)
       this.moveVisual({x: this.left, y: this.top});
       this.adjustControlBox();
     } else if (this.state === 'resize') {
@@ -387,7 +381,6 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     const matrix = this.container.getCTM();
     let svgPoint = SvgHelper.createPoint(point.x, point.y);
     svgPoint = svgPoint.matrixTransform(matrix);
-    console.log(`rotatePoint----原角度：${JSON.stringify(point)}, --旋转角度： ${JSON.stringify(svgPoint)}`);
 
     const result = { x: svgPoint.x, y: svgPoint.y };
 
@@ -407,7 +400,6 @@ export class RectangularBoxMarkerBase extends MarkerBase {
     matrix = matrix.inverse();
     let svgPoint = SvgHelper.createPoint(point.x, point.y);
     svgPoint = svgPoint.matrixTransform(matrix);
-    console.log(`unrotatePoint---原角度：${JSON.stringify(point)}, --旋转角度： ${JSON.stringify(svgPoint)}`);
     const result = { x: svgPoint.x, y: svgPoint.y };
 
     return result;

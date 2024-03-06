@@ -118,6 +118,7 @@ export class PolygonMarker extends PolyLinearMarkerBase {
       super.ownsTarget(el) ||
       el === this.visual ||
       el === this.visibleLine ||
+      el === this.visiblePolygon ||
       // @ts-ignore
       (this.visibleLine && this.visibleLine.getAttribute('points').includes(el.getAttribute('points'))) ||
       // @ts-ignore
@@ -157,6 +158,29 @@ export class PolygonMarker extends PolyLinearMarkerBase {
     this.visual.appendChild(this.visibleLine);
 
     this.addMarkerVisualToContainer(this.visual);
+  }
+
+  /** 创建Polygon */
+  private createVisualPolygon() {
+    if (this.visual) return;
+    this.visual = SvgHelper.createGroup();
+    const str = this.getPointsToString(this.points);
+    console.log(JSON.stringify(this.points));
+    this.visiblePolygon = SvgHelper.createPolygon(
+      str,
+      [
+        ['stroke', this.strokeColor],
+        ['fill', 'rgba(155, 255, 0, 0.2)'],
+        ['opacity', this.opacity.toString()],
+        ['stroke-width', this.strokeWidth.toString()],
+      ]
+    );
+
+    this.visual.appendChild(this.visiblePolygon);
+
+    this.addMarkerVisualToContainer(this.visual);
+    
+    console.log(JSON.stringify(this.visiblePolygon.getAttribute('points')));
   }
 
   /**
@@ -229,6 +253,9 @@ export class PolygonMarker extends PolyLinearMarkerBase {
       strokeDasharray: this.strokeDasharray,
       fillColor: this.fillColor,
       opacity: this.opacity,
+      points: this.points,
+      oldPoints: this.oldPoints,
+      grips: this.grips,
     }, super.getState());
     result.typeName = PolygonMarker.typeName;
 
@@ -256,6 +283,12 @@ export class PolygonMarker extends PolyLinearMarkerBase {
    */
   public dblClick(point: IPoint, target?: EventTarget): void {
     super.dblClick(point, target);
+    
+    this.changePolygon();
+  }
+
+  /** 将Polyline变更为Polygon */
+  private changePolygon() {
     this.container.removeChild(this.visual);
 
     const str = this.getPointsToString(this.points);
@@ -309,8 +342,16 @@ export class PolygonMarker extends PolyLinearMarkerBase {
     this.strokeDasharray = lmState.strokeDasharray;
     this.fillColor = lmState.fillColor;
     this.opacity = lmState.opacity;
+    this.points = lmState.points;
+    this.oldPoints = [];
+    lmState.points.forEach(p => {
+      this.oldPoints.push(JSON.parse(JSON.stringify(p)));
+    });
+    this.addControlGrips();
 
-    this.createVisual();
+    this.createVisualPolygon();
+    this.created = true;
     this.adjustVisual();
+
   }
 }

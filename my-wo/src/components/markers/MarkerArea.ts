@@ -180,6 +180,7 @@ export class MarkerArea {
     ];
   }
 
+  /** 默认的可操作的图形列表DEFAULT_MARKER_TYPES */
   private _availableMarkerTypes: typeof MarkerBase[] = this
     .DEFAULT_MARKER_TYPES;
 
@@ -400,22 +401,24 @@ export class MarkerArea {
   constructor(target: HTMLImageElement | HTMLElement) {
     this._instanceNo = MarkerArea.instanceCounter++;
 
-    // css样式设置，css-in-js
+    /** css样式设置，css-in-js */
     this.styles = new StyleManager(this.instanceNo);
 
-    // 默认的UI样式
+    // 
+    /** 默认的UI样式 */
     this.uiStyleSettings = this.styles.settings;
 
-    // 目标图片
+    /** 目标图片 */
     this.target = target;
-    // body元素
+    /** body元素 */
     this.targetRoot = document.body;
 
-    // 目标图片的宽高
+    /** 目标图片的高 */
     this.width = target.clientWidth;
+    /** 目标图片的宽 */
     this.height = target.clientHeight;
 
-    // 移除上一次添加的document.createElement('style')
+    /** 移除上一次添加的document.createElement('style') */
     this.styles.removeStyleSheet();
 
     this.open = this.open.bind(this);
@@ -486,10 +489,13 @@ export class MarkerArea {
       this.styles.styleSheetRoot = Style.styleSheetRoot;
     }
 
+    // 重置markers数组
     // reset markers array
     this.markers.splice(0);
 
+    /** 设置(windowHeight)窗口的高度为window.innerHeight */
     this.setWindowHeight();
+    /** 显示UI */
     this.showUI();
     this.open();
     this.eventListeners['show'].forEach((listener) =>
@@ -681,6 +687,7 @@ export class MarkerArea {
     this.resize(newWidth, newHeight);
   }
 
+  /** 设置(windowHeight)窗口的高度为window.innerHeight */
   private setWindowHeight() {
     this.windowHeight = window.innerHeight;
   }
@@ -728,9 +735,7 @@ export class MarkerArea {
     if (this.toolbar !== undefined) {
       this.toolbar.adjustLayout();
     }
-
-    this.positionLogo();
-
+    console.log(scaleX, scaleY);
     this.scaleMarkers(scaleX, scaleY);
 
     this._isResizing = false;
@@ -893,7 +898,9 @@ export class MarkerArea {
     window.scroll({ top: this.scrollYState, left: this.scrollXState });
   }
 
+  /** 显示UI */
   private showUI(): void {
+    // displayMode = popup 为满屏模式
     if (this.settings.displayMode === 'popup') {
       this.overrideOverflow();
     }
@@ -903,7 +910,7 @@ export class MarkerArea {
     this.coverDiv.style.visibility = this._silentRenderMode
       ? 'hidden'
       : 'visible';
-    this.coverDiv.className = `${this.styles.classNamePrefixBase} ${this.styles.classNamePrefix}`;
+    this.coverDiv.className = `${this.styles.classNamePrefixBase} ${this.styles.classNamePrefix} coverDiv`;
     // hardcode font size so nothing inside is affected by higher up settings
     this.coverDiv.style.fontSize = '16px';
     this.coverDiv.style.userSelect = 'none';
@@ -945,9 +952,11 @@ export class MarkerArea {
         // this.coverDiv.style.overflow = 'auto';
       }
     }
+    // 将主容器添加到body元素里面
     this.targetRoot.appendChild(this.coverDiv);
 
     this.uiDiv = document.createElement('div');
+    this.uiDiv.className = 'uiDiv';
     this.uiDiv.style.display = 'flex';
     this.uiDiv.style.flexDirection = 'column';
     this.uiDiv.style.flexGrow = '2';
@@ -961,9 +970,10 @@ export class MarkerArea {
     this.uiDiv.style.border = '0px';
     // this.uiDiv.style.overflow = 'hidden';
     //this.uiDiv.style.backgroundColor = '#ffffff';
+    // 将UI容器添加到主容器元素里面
     this.coverDiv.appendChild(this.uiDiv);
 
-    // 顶部的工具库
+    // 顶部的【图形按钮】面板
     this.toolbar = new Toolbar(
       this.uiDiv,
       this.settings.displayMode,
@@ -971,15 +981,18 @@ export class MarkerArea {
       this.uiStyleSettings,
       this.styles
     );
-    // 添加工具库的监听
+    // 添加【图形按钮】的监听列表函数
     this.toolbar.addButtonClickListener(this.toolbarButtonClicked);
+    // 显示顶部可操作区域
     this.toolbar.show(
       this._silentRenderMode || this.uiStyleSettings.hideToolbar
         ? 'hidden'
         : 'visible'
     );
 
+    // this.contentDiv 内容容器，装载了操作区域（this.editorCanvas）
     this.contentDiv = document.createElement('div');
+    this.contentDiv.className = 'contentDiv';
     this.contentDiv.style.display = 'flex';
     this.contentDiv.style.flexDirection = 'row';
     this.contentDiv.style.flexGrow = '2';
@@ -1001,6 +1014,7 @@ export class MarkerArea {
     this.uiDiv.appendChild(this.contentDiv);
 
     this.editorCanvas = document.createElement('div');
+    this.editorCanvas.className = 'editorCanvas';
     this.editorCanvas.style.flexGrow = '2';
     this.editorCanvas.style.flexShrink = '1';
     this.editorCanvas.style.position = 'relative';
@@ -1015,6 +1029,7 @@ export class MarkerArea {
     this.editorCanvas.style.transform = `scale(${this.zoomLevel})`;
     this.contentDiv.appendChild(this.editorCanvas);
 
+    // 判断target 是图片还是canvas
     this.editingTarget =
       this.target instanceof HTMLImageElement
         ? document.createElement('img')
@@ -1026,14 +1041,17 @@ export class MarkerArea {
         this.target.offsetTop - this.styles.settings.toolbarHeight
       }px`;
     }
+    // 将图片元素添加到可操作区域元素中
     this.editorCanvas.appendChild(this.editingTarget);
 
+    // 添加底部按钮面板
     this.toolbox = new Toolbox(
       this.uiDiv,
       this.settings.displayMode,
       this.uiStyleSettings,
       this.styles
     );
+    // 显示底部按钮面板
     this.toolbox.show(
       this._silentRenderMode || this.uiStyleSettings.hideToolbox
         ? 'hidden'
@@ -1074,14 +1092,16 @@ export class MarkerArea {
     }
   }
 
-  // Toolbar buttonClickListeners 监听的逻辑判断 buttonType = marker | action
+  /** Toolbar buttonClickListeners 监听的逻辑判断，buttonType为标记（图形）或者动作 buttonType = marker | action */
   private toolbarButtonClicked(
     buttonType: ToolbarButtonType,
     value?: typeof MarkerBase | string
   ) {
     if (buttonType === 'marker' && value !== undefined) {
+      // 创建图形
       this.createNewMarker(<typeof MarkerBase>value);
     } else if (buttonType === 'action') {
+      // 动作 select | delete | clear | undo | redo | zoom | zoom-out | notes
       switch (value) {
         case 'select': {
           this.switchToSelectMode();
@@ -1691,7 +1711,6 @@ export class MarkerArea {
       }
     }
     this.positionMarkerImage();
-    this.positionLogo();
   }
 
   private eventListeners = new EventListenerRepository();

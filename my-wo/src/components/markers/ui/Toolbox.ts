@@ -176,16 +176,20 @@ export class Toolbox {
    * Creates and displays the main toolbox UI.
    */
   public show(visiblity: string): void {
+    // 添加底部box的容器
     this.uiContainer = document.createElement('div');
+    // 通过入参来影响是否展示底部box元素
     this.uiContainer.style.visibility = visiblity;
     this.uiContainer.className = `${this.toolboxStyleClass.name} ${
       this.uiStyleSettings.toolboxStyleColorsClassName ?? this.toolboxStyleColorsClass.name}`;
 
+    // 将底部box元素添加到UI元素中
     this.markerjsContainer.appendChild(this.uiContainer);
   }
 
   /**
    * Creaes buttons for the top-level toolbox panel.
+   * 通过这个func，添加toolbox数组项
    * @param panels - available panels.
    */
   public setPanelButtons(panels: ToolboxPanel[]): void {
@@ -193,15 +197,18 @@ export class Toolbox {
     if (this.uiContainer !== undefined) {
       this.uiContainer.innerHTML = '';
 
+      // 每个功能详细操作
       this.panelRow = document.createElement('div');
       this.panelRow.className = `${this.toolboxPanelRowStyleClass.name} ${
         this.uiStyleSettings.toolboxPanelRowStyleColorsClassName ?? this.toolboxPanelRowStyleColorsClass.name}`;
       this.uiContainer.appendChild(this.panelRow);
+      // 功能显示选择区域
       this.buttonRow = document.createElement('div');
       this.buttonRow.className = `${this.toolboxButtonRowStyleClass.name} ${
         this.uiStyleSettings.toolboxButtonRowStyleColorsClassName ?? this.toolboxButtonRowStyleColorsClass.name} `;
       this.uiContainer.appendChild(this.buttonRow);
 
+      // 清除数组
       this.panelButtons.splice(0);
 
       this.panels.forEach(panel => {
@@ -216,10 +223,13 @@ export class Toolbox {
         if (panel.id) {
           panelBtnDiv.setAttribute('data-action', panel.id);
         }
+        // 添加click事件
         panelBtnDiv.addEventListener('click', () => {
           this.panelButtonClick(panel);
         })
+        // 缓存数据
         this.panelButtons.push(panelBtnDiv);
+        // 将面板按钮添加到按钮面板容器中
         this.buttonRow.appendChild(panelBtnDiv);
       });
       if (this.displayMode === 'inline') {
@@ -234,8 +244,10 @@ export class Toolbox {
     // }
   }
 
+  // 底部按钮面板click事件处理
   private panelButtonClick(panel: ToolboxPanel) {
     let panelIndex = -1; 
+    // 【选中底部按钮面板】不是【活动按钮面板】
     if (panel !== this.activePanel) {
       panelIndex = this.panels.indexOf(panel);
       this.panelRow.innerHTML = '';
@@ -246,6 +258,7 @@ export class Toolbox {
       this.panelRow.style.visibility = 'visible';
       this.panelRow.className = this.panelRow.className.replace(this.styles.fadeOutAnimationClassName, '');
       this.panelRow.className += ` ${this.styles.fadeInAnimationClassName}`;
+      // 设置【选中底部按钮面板】为【活动按钮面板】
       this.activePanel = panel;
     } else {
       this.activePanel = undefined;
