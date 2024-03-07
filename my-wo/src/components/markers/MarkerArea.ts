@@ -105,8 +105,6 @@ export class MarkerArea {
 
   private touchPoints = 0;
 
-  private logoUI: HTMLElement;
-
   /**
    * `targetRoot` is used to set an alternative positioning root for the marker.js UI.
    *
@@ -464,12 +462,13 @@ export class MarkerArea {
   }
 
   private open(): void {
-    // 监听元素的大小变化
+    // 监听元素的大小变化，缩放（scaleX,scaleY）问题，设置图片的大小问题
     this.setupResizeObserver();
     this.setEditingTarget();
     this.setTopLeft();
     // 初始化容器对象
     this.initMarkerCanvas();
+    /** 创建一个overlayContainer容器，可用于notes的编辑textarea */
     this.initOverlay();
     // 添加pointer监听事件
     this.attachEvents();
@@ -506,7 +505,7 @@ export class MarkerArea {
 
   /**
    * Renders the annotation result.
-   *
+   * 返回图片地址，通过canvas.toDataURL，转换出来的
    * Normally, you should use {@linkcode addEventListener} method to set a listener for the `render` event
    * rather than calling this method directly.
    */
@@ -763,6 +762,7 @@ export class MarkerArea {
     }
   }
 
+  /** 设置【可编辑图片对象】的属性,如：src,width,height,style */
   private setEditingTarget() {
     this.imageWidth = Math.round(this.target.clientWidth);
     this.imageHeight = Math.round(this.target.clientHeight);
@@ -778,6 +778,7 @@ export class MarkerArea {
     this.editingTarget.style.height = `${this.imageHeight}px`;
   }
 
+  /** 根据【可编辑图片对象】和【可编辑容器】计算出left和top的值 */
   private setTopLeft() {
     const targetRect = this.editingTarget.getBoundingClientRect();
     const bodyRect = this.editorCanvas.getBoundingClientRect();
@@ -785,6 +786,7 @@ export class MarkerArea {
     this.top = targetRect.top - bodyRect.top;
   }
 
+  /** 初始化【可操作区域】，即在【可编辑图片对象】上面，创建了一个div和svg */
   private initMarkerCanvas(): void {
     this.markerImageHolder = document.createElement('div');
     this.markerImageHolder.style.setProperty('touch-action', 'pinch-zoom');
@@ -833,6 +835,7 @@ export class MarkerArea {
     }
   }
 
+  /** 创建一个overlayContainer容器，可用于notes的编辑textarea */
   private initOverlay(): void {
     this.overlayContainer = document.createElement('div');
     this.overlayContainer.style.position = 'absolute';
@@ -844,12 +847,13 @@ export class MarkerArea {
     this.markerImageHolder.appendChild(this.overlayContainer);
   }
 
+  /** 计算【可操作区域】的top和left相对于缩放比例的位置 */
   private positionMarkerImage() {
     this.markerImageHolder.style.top = this.top / this.zoomLevel + 'px';
     this.markerImageHolder.style.left = this.left / this.zoomLevel + 'px';
   }
 
-  // 添加绘制事件 pointer events 
+  /** 添加绘制事件 pointer events  */
   private attachEvents() {
     this.markerImage.addEventListener('pointerdown', this.onPointerDown);
     // workaround to prevent a bug with Apple Pencil
@@ -860,6 +864,7 @@ export class MarkerArea {
     this.attachWindowEvents();
   }
 
+  /** 添加window监听事件 */
   private attachWindowEvents() {
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
@@ -886,6 +891,7 @@ export class MarkerArea {
     window.removeEventListener('keyup', this.onKeyUp);
   }
 
+  /** 备份滚动和溢出的当前状态 */
   private overrideOverflow() {
     // backup current state of scrolling and overflow
     this.scrollXState = window.scrollX;
@@ -1032,7 +1038,7 @@ export class MarkerArea {
     this.editorCanvas.style.transform = `scale(${this.zoomLevel})`;
     this.contentDiv.appendChild(this.editorCanvas);
 
-    // 判断target 是图片还是canvas
+    // 判断target 是图片还是canvas，并创建【可编辑的target对象】editingTarget
     this.editingTarget =
       this.target instanceof HTMLImageElement
         ? document.createElement('img')
@@ -1080,6 +1086,7 @@ export class MarkerArea {
     marker.dispose();
   }
 
+  /** 将mode赋值为select */
   public switchToSelectMode(): void {
     this.mode = 'select';
     this.hideNotesEditor();
@@ -1377,6 +1384,7 @@ export class MarkerArea {
   /**
    * Returns the complete state for the MarkerArea that can be preserved and used
    * to continue annotation next time.
+   * 返回MarkerAreaState结构，width,height,markers
    *
    * @param deselectCurrentMarker - when `true` is passed, currently selected marker will be deselected before getting the state.
    */
@@ -1683,6 +1691,7 @@ export class MarkerArea {
     };
   }
 
+  /** 通过监听resize事件，来变更UI的位置 */
   private onWindowResize() {
     this.positionUI();
   }

@@ -138,6 +138,7 @@ export class Toolbar {
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : ZoomOutIcon, 'zoom-out', 'Zoom out');
     }
     if (this.uiStyleSettings.notesButtonVisible) {
+      // 【笔记】
       this.addActionButton(actionButtonBlock, process.env.NODE_ENV !== 'production' ? '1' : NotesIcon, 'notes', 'Notes');
     }
 
