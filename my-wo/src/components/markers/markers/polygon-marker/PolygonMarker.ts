@@ -254,8 +254,6 @@ export class PolygonMarker extends PolyLinearMarkerBase {
       fillColor: this.fillColor,
       opacity: this.opacity,
       points: this.points,
-      oldPoints: this.oldPoints,
-      grips: this.grips,
     }, super.getState());
     result.typeName = PolygonMarker.typeName;
 

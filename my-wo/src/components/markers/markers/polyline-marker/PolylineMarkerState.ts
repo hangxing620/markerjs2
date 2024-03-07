@@ -19,6 +19,4 @@ export interface PolylineMarkerState extends PolyLinearMarkerBaseState {
    */
   strokeDasharray: string,
   points: IPoint[],
-  oldPoints: IPoint[],
-  grips: ResizeGrip[],
 }

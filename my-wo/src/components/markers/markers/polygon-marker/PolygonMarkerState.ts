@@ -21,6 +21,4 @@ export interface PolygonMarkerState extends PolyLinearMarkerBaseState {
   fillColor: string,
   opacity: number,
   points: IPoint[],
-  oldPoints: IPoint[],
-  grips: ResizeGrip[],
 }

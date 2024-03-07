@@ -191,8 +191,6 @@ export class PolylineMarker extends PolyLinearMarkerBase {
       strokeWidth: this.strokeWidth,
       strokeDasharray: this.strokeDasharray,
       points: this.points,
-      oldPoints: this.oldPoints,
-      grips: this.grips,
     }, super.getState());
     result.typeName = PolylineMarker.typeName;
 

@@ -34,6 +34,7 @@ import {
 } from './core/Events';
 import { PolylineMarker } from './markers/polyline-marker/PolylineMarker';
 import { PolygonMarker } from './markers/polygon-marker/PolygonMarker' ;
+import { toFixed } from './core/utils';
 
 /**
  * @ignore
@@ -655,6 +656,7 @@ export class MarkerArea {
     // }
   }
 
+  /** 设置缩放问题，关于displayMode inline|popup */
   private setupResizeObserver() {
     if (this.settings.displayMode === 'inline') {
       if (window.ResizeObserver) {
@@ -695,9 +697,10 @@ export class MarkerArea {
   private _isResizing = false;
   private resize(newWidth: number, newHeight: number) {
     this._isResizing = true;
-
-    const scaleX = newWidth / this.imageWidth;
-    const scaleY = newHeight / this.imageHeight;
+    newWidth = toFixed(newWidth);
+    newHeight = toFixed(newHeight);
+    const scaleX = toFixed(newWidth / this.imageWidth);
+    const scaleY = toFixed(newHeight / this.imageHeight);
 
     this.imageWidth = Math.round(newWidth);
     this.imageHeight = Math.round(newHeight);
