@@ -48,12 +48,17 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
    * Ellipse opacity (0..1).
    */
   protected opacity = 1;
+  /**
+   * Ellipse fill-opacity (0..1).
+   */
+  protected fillOpacity = 1;
 
   protected strokePanel: ColorPickerPanel;
   protected fillPanel: ColorPickerPanel;
   protected strokeWidthPanel: LineWidthPanel;
   protected strokeStylePanel: LineStylePanel;
   protected opacityPanel: OpacityPanel;
+  protected fillOpacityPanel: OpacityPanel;
 
   /**
    * Creates a new marker.
@@ -75,6 +80,7 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
     this.setStrokeWidth = this.setStrokeWidth.bind(this);
     this.setStrokeDasharray = this.setStrokeDasharray.bind(this);
     this.setOpacity = this.setOpacity.bind(this);
+    this.setFillOpacity = this.setFillOpacity.bind(this);
     this.createVisual = this.createVisual.bind(this);
 
     this.strokePanel = new ColorPickerPanel(
@@ -115,6 +121,13 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
       this.opacity
     );
     this.opacityPanel.onOpacityChanged = this.setOpacity;
+
+    this.fillOpacityPanel = new OpacityPanel(
+      'Fill Opacity',
+      settings.defaultOpacitySteps,
+      this.fillOpacity
+    );
+    this.fillOpacityPanel.onOpacityChanged = this.setFillOpacity;
   }
 
   /**
@@ -139,7 +152,8 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
       ['stroke', this.strokeColor],
       ['stroke-width', this.strokeWidth.toString()],
       ['stroke-dasharray', this.strokeDasharray],
-      ['opacity', this.opacity.toString()]
+      ['opacity', this.opacity.toString()],
+      ['fill-opacity', this.fillOpacity.toString()],
     ]);
     this.addMarkerVisualToContainer(this.visual);
   }
@@ -259,12 +273,23 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
     }
     this.stateChanged();
   }
+  /**
+   * Sets marker's opacity.
+   * @param opacity - new opacity value (0..1).
+   */
+  protected setFillOpacity(opacity: number): void {
+    this.fillOpacity = opacity;
+    if (this.visual) {
+      SvgHelper.setAttributes(this.visual, [['fill-opacity', this.fillOpacity.toString()]]);
+    }
+    this.stateChanged();
+  }
 
   /**
    * Returns the list of toolbox panels for this marker type.
    */
   public get toolboxPanels(): ToolboxPanel[] {
-    return [this.strokePanel, this.fillPanel, this.strokeWidthPanel, this.strokeStylePanel, this.opacityPanel];
+    return [this.strokePanel, this.fillPanel, this.strokeWidthPanel, this.strokeStylePanel, this.opacityPanel, this.fillOpacityPanel];
   }
 
   /**
@@ -276,7 +301,8 @@ export class EllipseMarker extends RectangularBoxMarkerBase {
       strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,
       strokeDasharray: this.strokeDasharray,
-      opacity: this.opacity
+      opacity: this.opacity,
+      fillOpacity: this.fillOpacity
     }, super.getState());
     result.typeName = EllipseMarker.typeName;
 
